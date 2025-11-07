@@ -31,18 +31,18 @@ A blog post explaining this project can be found here: [Open Source Ada from Gat
    ```bash
    git clone --recurse-submodules https://github.com/stnolting/neorv32-setups.git
    ```
-6. **(IMPORTANT): Modify the top-level VHDL file to adjust memory sizes for our BIOS firmware**  
+6. **(IMPORTANT): Modify the top-level VHDL file to adjust memory sizes for our BIOS firmware**
    ```bash
    apt-get update && apt-get install nano
    nano neorv32-setups/osflow/board_tops/neorv32_ULX3S_BoardTop_MinimalBoot.vhd
-   ```  
-   Change the IMEM and DMEM lines to:  
+   ```
+   Change the IMEM and DMEM lines to:
    ```
    MEM_INT_IMEM_SIZE => 32*1024,
    MEM_INT_DMEM_SIZE => 16*1024
    ```
 
-7. **Build the default SoC with minimal boot:**  
+7. **Build the default SoC with minimal boot:**
    ```bash
    cd neorv32-setups/osflow
    make BOARD=ULX3S MinimalBoot
@@ -88,7 +88,7 @@ Now the neorv32 SoC is on your ULX3S dev board. Next, build and prepare the BIOS
    ```
    > **Note:** If you encounter a permission error while compiling, ensure you’re in a directory where you have write access or use `sudo` appropriately.
 
-2. **Ensure `riscv64-elf-objcopy` is in your `$PATH`:**  
+2. **Ensure `riscv64-elf-objcopy` is in your `$PATH`:**
    This tool is provided when Alire installs the RISC-V cross-compiler. Check its location with:
    ```bash
    which riscv64-elf-objcopy
