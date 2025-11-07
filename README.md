@@ -1,179 +1,257 @@
-# neorv32_hal
+# NEORV32 RISC-V Softcore with Ada HAL
 
-A blog post explaining this project can be found here: [Open Source Ada from Gateware to Application](https://blog.adacore.com/open-source-ada-from-gateware-to-application)
+> **Note:** This is a fork of [stnolting/neorv32-setups](https://github.com/stnolting/neorv32-setups) with curated instructions and repository structure optimized for Ada firmware development with [neorv32-hal](https://github.com/GNAT-Academic-Program/neorv32_hal). The original repository contains setups for many more FPGA boards.
 
-<p align="center">
-  <img src="https://github.com/GNAT-Academic-Program/neorv32_hal/blob/main/neorv32_ada.png?raw=true" alt="Header Image" style="width: 65%; height: auto;">
-</p>
+This repository provides FPGA setups for the [NEORV32 RISC-V Processor](https://github.com/stnolting/neorv32) with Ada firmware support through neorv32-hal (included as a submodule).
 
-## Build the neorv32 Bitstream (for ULX3S dev board)
+## Supported FPGA Boards
 
-1. **Install Docker (if not already installed):**
+This guide covers three development boards:
+
+| Board | FPGA | Toolchain | Setup Location |
+|:------|:-----|:----------|:---------------|
+| [Digilent Basys3](https://reference.digilentinc.com/reference/programmable-logic/basys-3/reference-manual) | Xilinx Artix-7 `XC7A35TCPG236-1` | Vivado | [`vivado/basys3-a7-test-setup`](vivado/basys3-a7-test-setup) |
+| [ULX3S](https://radiona.org/ulx3s/) | Lattice ECP5 `LFE5U-85F` | Open Source (GHDL/Yosys/nextPNR) | [`osflow`](osflow) |
+| [Sipeed Tang Nano 9K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html) | Gowin GW1NR-9 `GW1NR-LV9QN88PC6/I5` | Gowin EDA | [`gowineda/tang-nano-9k`](gowineda/tang-nano-9k) |
+
+---
+
+## Getting Started
+
+> **Important:** This repository uses Git submodules. You **must** clone with submodules to get the complete project.
+
+**Clone this repository with submodules:**
+
+```bash
+git clone --recurse-submodules https://github.com/GNAT-Academic-Program/neorv32-setups.git
+cd neorv32-setups
+```
+---
+
+## Building the Softcore
+
+### Option 1: Digilent Basys3 (Xilinx Vivado)
+
+**Prerequisites:** Xilinx Vivado installed
+
+1. Navigate to the Basys3 setup directory:
    ```bash
-   sudo apt update
-   sudo apt install -y docker.io
-   sudo systemctl enable --now docker
+   cd vivado/basys3-a7-test-setup
    ```
-2. **Create a working directory:**
+
+2. Generate the bitstream:
    ```bash
-   cd ~ && mkdir neorv32_workspace && cd neorv32_workspace
+   vivado -mode batch -source create_project.tcl
    ```
-3. **Pull the `neorv32/impl` container (includes all the required open-source tools):**
+
+3. Program the FPGA:
    ```bash
-   sudo docker pull ghcr.io/stnolting/neorv32/impl:latest
+   vivado -mode batch -source program_bitstream.tcl
    ```
-4. **Run the container, mapping your current folder to `/workspace`:**
+
+4. Connect via UART at **19200 baud, 8N1** (USB-UART appears as `/dev/ttyUSB0` or `COM*` on Windows)
+
+See [vivado/basys3-a7-test-setup/README.md](vivado/basys3-a7-test-setup/README.md) for details.
+
+---
+
+### Option 2: ULX3S (Open Source Toolchain)
+
+**Prerequisites:** Docker installed
+
+1. **Pull the neorv32/impl container** (includes GHDL, Yosys, nextPNR):
    ```bash
-   sudo docker run --rm -it -v "$(pwd)":/workspace ghcr.io/stnolting/neorv32/impl bash
+   docker pull ghcr.io/stnolting/neorv32/impl:latest
+   ```
+
+2. **Run the container:**
+   ```bash
+   docker run --rm -it -v "$(pwd)":/workspace ghcr.io/stnolting/neorv32/impl bash
    cd /workspace
    ```
-5. **Clone `neorv32-setups` (with submodules):**
-   ```bash
-   git clone --recurse-submodules https://github.com/stnolting/neorv32-setups.git
-   ```
-6. **(IMPORTANT): Modify the top-level VHDL file to adjust memory sizes for our BIOS firmware**  
-   ```bash
-   apt-get update && apt-get install nano
-   nano neorv32-setups/osflow/board_tops/neorv32_ULX3S_BoardTop_MinimalBoot.vhd
-   ```  
-   Change the IMEM and DMEM lines to:  
-   ```
-   MEM_INT_IMEM_SIZE => 32*1024,
-   MEM_INT_DMEM_SIZE => 16*1024
-   ```
 
-7. **Build the default SoC with minimal boot:**  
+3. **Build the bitstream:**
    ```bash
-   cd neorv32-setups/osflow
+   cd osflow
    make BOARD=ULX3S MinimalBoot
    ```
 
----
-
-## Program Your ULX3S FPGA Board Using Fujprog
-
-1. **Install dependencies:**
+4. **Program the board using fujprog:**
    ```bash
-   sudo apt install libftdi1-dev libusb-dev cmake make build-essential
-   ```
-2. **Clone fujprog:**
-   ```bash
-   cd ~/neorv32_workspace
-   git clone https://github.com/kost/fujprog
-   cd fujprog
-   ```
-3. **Build and install fujprog:**
-   ```bash
-   mkdir build && cd build
-   cmake ..
-   make
-   sudo make install
-   ```
-4. **Program your board (adjust the path to your bitstream if needed):**
-   ```bash
-   fujprog ../../neorv32-setups/osflow/neorv32_ULX3S_MinimalBoot.bit
+   fujprog neorv32_ULX3S_MinimalBoot.bit
    ```
 
-Now the neorv32 SoC is on your ULX3S dev board. Next, build and prepare the BIOS demo to familiarize yourself with the workflow.
+See [osflow/README.md](osflow/README.md) for more targets and details.
 
 ---
 
-## Set Up the neorv32 Bootloader Tools
+### Option 3: Tang Nano 9K (Gowin EDA)
 
-1. **Compile `image_gen` (bundled with neorv32):**
+**Prerequisites:** Gowin EDA installed
+
+1. Navigate to the Tang Nano 9K setup directory:
    ```bash
-   cd ~/neorv32_workspace/neorv32-setups/neorv32/sw/image_gen
+   cd gowineda/tang-nano-9k
+   ```
+
+2. Open the project in Gowin EDA IDE
+
+3. Generate and program the bitstream using Gowin Programmer
+
+See [gowineda/tang-nano-9k/README.md](gowineda/tang-nano-9k/README.md) for details.
+
+---
+
+## Building Ada Firmware
+
+### Prerequisites
+
+1. **Install Alire** (Ada package manager): [alire.ada.dev](https://alire.ada.dev/)
+
+2. **Ensure RISC-V toolchain is in PATH** (installed automatically by Alire):
+
+   **Linux/macOS:**
+   ```bash
+   export PATH="$PATH:~/.local/share/alire/toolchains/gnat_riscv64_elf_*/bin"
+   ```
+   Add to `~/.bashrc` or `~/.zshrc` to make permanent.
+
+   **Windows (PowerShell):**
+   ```powershell
+   $env:PATH += ";$env:USERPROFILE\.local\share\alire\toolchains\gnat_riscv64_elf_*\bin"
+   ```
+   Add to PowerShell profile or set permanently via System Environment Variables.
+
+3. **Build and install the bootloader image generator:**
+
+   **Linux/macOS:**
+   ```bash
+   cd neorv32/sw/image_gen
    gcc image_gen.c -o image_gen
    sudo cp image_gen /usr/local/bin/
    ```
-   > **Note:** If you encounter a permission error while compiling, ensure you’re in a directory where you have write access or use `sudo` appropriately.
 
-2. **Ensure `riscv64-elf-objcopy` is in your `$PATH`:**  
-   This tool is provided when Alire installs the RISC-V cross-compiler. Check its location with:
-   ```bash
-   which riscv64-elf-objcopy
+   **Windows (PowerShell/CMD):**
+   ```cmd
+   cd neorv32\sw\image_gen
+   gcc image_gen.c -o image_gen.exe
    ```
-   If nothing is returned, complete the **Build the Ada Demos Firmware (BIOS)** section first—Alire will install the entire RISC-V toolchain. Then add the toolchain’s directory (e.g., `~/.local/share/alire/toolchains/gnat_riscv64_elf_[version]/bin`) to your PATH:
-   ```bash
-   export PATH="$PATH:~/.local/share/alire/toolchains/gnat_riscv64_elf_[version]/bin"
-   ```
-   To make this change permanent, add that line to your `~/.bashrc` (or equivalent) and reload:
-   ```bash
-   source ~/.bashrc
-   ```
+   Then manually copy `image_gen.exe` to a directory in your PATH (e.g., `C:\Windows\System32`) or add the current directory to your PATH.
 
----
 
-## Build the Ada Demos Firmware (BIOS)
+### Build the Demo Firmware
 
-1. **[Install Alire](https://alire.ada.dev/), the Ada package manager**
+The neorv32-hal repository is already included as a submodule in this fork.
 
-2. **Move back to the root of your workspace:**
+1. **Navigate to the demos directory:**
    ```bash
-   cd ~/neorv32_workspace
-   ```
-3. **Clone the repository from GitHub:**
-   ```bash
-   git clone https://github.com/GNAT-Academic-Program/neorv32_hal
-   ```
-   *(Alternatively, once it’s on Alire:)*
-   ```bash
-   alr get neorv32_hal
-   ```
-4. **Build using Alire:**
-   ```bash
-   cd neorv32_hal*/demos
-   alr build
-   ```
-5. **Convert and package the firmware:**
-   ```bash
-   riscv64-elf-objcopy -O binary bin/bios bin/bios.bin
-   image_gen -app_bin bin/bios.bin bin/bios.exe
+   cd neorv32-hal/demos
    ```
 
----
+2. **Build the firmware using the provided scripts:**
 
-## Upload the Firmware to the neorv32 Bootloader
+   **For application binary (to upload via bootloader):**
 
-1. **Install a serial terminal for raw file transfers (e.g., gtkterm):**
+   **Linux/macOS:**
+   ```bash
+   ./build_app_bin.sh
+   ```
+
+   **Windows:**
+   ```batch
+   build_app_bin.bat
+   ```
+
+   This script builds the Ada firmware with Alire and converts it to the NEORV32 executable format (`bin/bios.exe`) that can be uploaded via the bootloader.
+
+   **For bootloader VHDL image (to synthesize into bitstream):**
+
+   1. **Edit the linker script** `neorv32-hal/src/link.ld`:
+
+      Change the ROM origin from:
+      ```
+      rom (rx) : ORIGIN = 0x0, LENGTH = 0x10000
+      ```
+
+      To:
+      ```
+      rom (rx) : ORIGIN = 0xFFE00000, LENGTH = 0x10000
+      ```
+
+   2. **Run the build script:**
+
+      **Linux/macOS:**
+      ```bash
+      ./build_bld_vhd.sh
+      ```
+
+      **Windows:**
+      ```batch
+      build_bld_vhd.bat
+      ```
+
+   This script builds the Ada firmware and generates a VHDL file (`neorv32/rtl/core/neorv32_bootloader_image.vhd`) that will be synthesized directly into the FPGA bitstream as the bootloader ROM.
+
+### Upload Firmware to FPGA
+
+#### Linux
+
+1. **Install gtkterm:**
    ```bash
    sudo apt install gtkterm
    ```
-2. **Open gtkterm:**
+
+2. **Connect to bootloader:**
    ```bash
    gtkterm --port /dev/ttyUSB0 --speed 19200
    ```
-3. **Configure gtkterm:**
-   - In the **Configuration** menu, set `CR LF auto`.
-4. **Upload the firmware:**
-   - At the `CMD:>` prompt in gtkterm, type `u`, then press **Ctrl+Shift+R**.
-   - Select `bios.exe` and wait for the upload to complete.
-   - At `CMD:>`, type `e`.
+   Set `CR LF auto` in Configuration menu.
 
-And voila!
+3. **Upload firmware:**
+   - Type `u` at `CMD:>` prompt
+   - Press **Ctrl+Shift+R** and select `bin/bios.exe`
+   - After upload completes, type `e` to execute
+
+#### Windows
+
+1. **Install Tera Term:** Download from [teratermproject.github.io](https://teratermproject.github.io/)
+
+2. **Connect to bootloader:**
+   - Open Tera Term
+   - Select your COM port (e.g., COM3)
+   - Set speed to **19200 baud, 8N1**
+   - Go to Setup → Terminal → Set "New-line" to "Receive: AUTO" and "Transmit: CR+LF"
+
+3. **Upload firmware:**
+   - Type `u` at `CMD:>` prompt
+   - Go to File → Transfer → XMODEM → Send
+   - Select `bin\bios.exe`
+   - After upload completes, type `e` to execute
+
+    **NOTE** This did not work for some people an alternative method has been found
+   - Type `u` at `CMD:>` prompt
+   - Go to File → Send File
+   - Select Checkbox Button Binary
+   - Select To Radio Button Sequential Read
+   ![alt text](send_file_setting.png)
+   - Select `bin\bios.exe`
+   - After upload completes, type `e` to execute
+---
+
+## Using neorv32_hal in Your Ada Projects
+
+For information on integrating neorv32_hal into your own Ada projects, see the [neorv32-hal README](neorv32-hal/README.md).
 
 ---
 
-## Use `neorv32_hal` in Your Project
+## Additional Resources
 
-1. **Add `neorv32_hal` as a dependency in your `alire.toml`:**
-   ```toml
-   [[depends-on]]
-   neorv32_hal = "*"
-   ```
-2. **Modify your `your_project.gpr`:**
-   ```ada
-   with "bare_runtime.gpr";
-   with "neorv32_hal.gpr";
+- [NEORV32 Documentation](https://stnolting.github.io/neorv32/)
+- [neorv32-hal Repository](https://github.com/GNAT-Academic-Program/neorv32_hal)
+- [Ada Blog Post: Open Source Ada from Gateware to Application](https://blog.adacore.com/open-source-ada-from-gateware-to-application)
+- [NEORV32 User Guide](https://stnolting.github.io/neorv32/ug/)
+- [Original neorv32-setups Repository](https://github.com/stnolting/neorv32-setups)
 
-   project Your_Project is
-      for Target use "riscv64-elf";
-      for Runtime ("Ada") use Bare_Runtime'Runtime ("Ada");
+## License
 
-      package Linker is
-         for Switches ("Ada") use ("-T", neorv32_Hal'Project_Dir & "/src/link.ld");
-      end Linker;
-   end Your_Project;
-   ```
-
-That’s it! You now have everything you need to generate the bitstream, program your FPGA, and start developing neorv32-based Ada projects. Happy hacking! 🚀
+See [LICENSE](LICENSE) for details.
