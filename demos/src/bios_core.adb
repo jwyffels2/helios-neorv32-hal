@@ -9,7 +9,7 @@ with Uart0;
 
 package body Bios_Core is
 
-   type Cmd_T is (Echo, Infos, Reload, Help, Unknown);
+   type Cmd_T is (Echo, Infos, Reload, Help, Seth, Unknown);
    Cmd : Cmd_T := Unknown;
 
    Cyan      : constant String := ASCII.ESC & "[38;2;0;255;255m";
@@ -42,6 +42,7 @@ package body Bios_Core is
       Put_Line (" i: System Infos.");
       Put_Line (" h: Help on commands.");
       Put_Line (" r: Reload the program.");
+      Put_Line (" s: Seth's test function.");
       Put_Line ("======================================");
       Show_Choice_Prompt;
    end Show_Menu;
@@ -65,6 +66,13 @@ package body Bios_Core is
       Put_Line ("Main Clock Frequency: " & Neorv32_Hal_Config.Clk'Image);
       Show_Choice_Prompt;
    end Show_Infos;
+
+   procedure Show_Seth_Test is
+   begin
+      New_Line;
+      Put_Line ("This is a successful test run by Seth!");
+      Show_Choice_Prompt;
+   end Show_Seth_Test;
 
    procedure Show_Unknown_Command is
    begin
@@ -112,6 +120,9 @@ package body Bios_Core is
                   when Help =>
                      New_Line;
                      Show_Menu;
+                  when Seth =>
+                     New_Line;
+                     Show_Seth_Test;
                   when others =>
                      Show_Unknown_Command;
                end case;
