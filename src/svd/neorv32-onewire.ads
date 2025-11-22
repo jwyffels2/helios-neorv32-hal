@@ -28,7 +28,7 @@ package neorv32.ONEWIRE is
    type CTRL_Register is record
       --  ONEWIRE controller enable
       ONEWIRE_CTRL_EN       : CTRL_ONEWIRE_CTRL_EN_Field := 16#0#;
-      --  Clear RXT FIFO, auto-clears
+      --  Write-only. Clear RXT FIFO, auto-clears
       ONEWIRE_CTRL_CLEAR    : CTRL_ONEWIRE_CTRL_CLEAR_Field := 16#0#;
       --  Clock prescaler select
       ONEWIRE_CTRL_PRSC     : CTRL_ONEWIRE_CTRL_PRSC_Field := 16#0#;
@@ -75,8 +75,8 @@ package neorv32.ONEWIRE is
       --  *** This field is modified following a read operation ***. RTX data,
       --  transmitted LSB-first
       ONEWIRE_DCMD_DATA     : DCMD_ONEWIRE_DCMD_DATA_Field := 16#0#;
-      --  *** This field is modified following a read operation ***. Operation
-      --  command
+      --  Write-only. *** This field is modified following a read operation
+      --  ***. Operation command
       ONEWIRE_DCMD_CMD      : DCMD_ONEWIRE_DCMD_CMD_Field := 16#0#;
       --  Read-only. *** This field is modified following a read operation ***.
       --  Bus presence detected

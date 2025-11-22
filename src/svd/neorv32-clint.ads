@@ -4,6 +4,8 @@ pragma Style_Checks (Off);
 
 pragma Restrictions (No_Elaboration_Code);
 
+with System;
+
 --  Core local interruptor
 package neorv32.CLINT is
    pragma Preelaborate;

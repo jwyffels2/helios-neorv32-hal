@@ -16,7 +16,6 @@ package neorv32.GPTMR is
 
    subtype CTRL_GPTMR_CTRL_EN_Field is neorv32.Bit;
    subtype CTRL_GPTMR_CTRL_PRSC_Field is neorv32.UInt3;
-   subtype CTRL_GPTMR_CTRL_MODE_Field is neorv32.Bit;
    subtype CTRL_GPTMR_CTRL_IRQ_CLR_Field is neorv32.Bit;
    subtype CTRL_GPTMR_CTRL_IRQ_PND_Field is neorv32.Bit;
 
@@ -26,11 +25,9 @@ package neorv32.GPTMR is
       GPTMR_CTRL_EN      : CTRL_GPTMR_CTRL_EN_Field := 16#0#;
       --  Clock prescaler select
       GPTMR_CTRL_PRSC    : CTRL_GPTMR_CTRL_PRSC_Field := 16#0#;
-      --  Operation mode (0=single-shot, 1=continuous)
-      GPTMR_CTRL_MODE    : CTRL_GPTMR_CTRL_MODE_Field := 16#0#;
       --  unspecified
-      Reserved_5_29      : neorv32.UInt25 := 16#0#;
-      --  Set to clear timer-match interrupt
+      Reserved_4_29      : neorv32.UInt26 := 16#0#;
+      --  Write-only. Set to clear timer-match interrupt
       GPTMR_CTRL_IRQ_CLR : CTRL_GPTMR_CTRL_IRQ_CLR_Field := 16#0#;
       --  Read-only. Timer-match interrupt pending
       GPTMR_CTRL_IRQ_PND : CTRL_GPTMR_CTRL_IRQ_PND_Field := 16#0#;
@@ -41,8 +38,7 @@ package neorv32.GPTMR is
    for CTRL_Register use record
       GPTMR_CTRL_EN      at 0 range 0 .. 0;
       GPTMR_CTRL_PRSC    at 0 range 1 .. 3;
-      GPTMR_CTRL_MODE    at 0 range 4 .. 4;
-      Reserved_5_29      at 0 range 5 .. 29;
+      Reserved_4_29      at 0 range 4 .. 29;
       GPTMR_CTRL_IRQ_CLR at 0 range 30 .. 30;
       GPTMR_CTRL_IRQ_PND at 0 range 31 .. 31;
    end record;

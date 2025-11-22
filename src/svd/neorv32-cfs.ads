@@ -4,6 +4,8 @@ pragma Style_Checks (Off);
 
 pragma Restrictions (No_Elaboration_Code);
 
+with System;
+
 --  Custom functions subsystem
 package neorv32.CFS is
    pragma Preelaborate;
