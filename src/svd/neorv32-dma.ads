@@ -17,6 +17,7 @@ package neorv32.DMA is
    subtype CTRL_DMA_CTRL_EN_Field is neorv32.Bit;
    subtype CTRL_DMA_CTRL_START_Field is neorv32.Bit;
    subtype CTRL_DMA_CTRL_FIFO_Field is neorv32.UInt4;
+   subtype CTRL_DMA_CTRL_ACK_Field is neorv32.Bit;
    subtype CTRL_DMA_CTRL_DEMPTY_Field is neorv32.Bit;
    subtype CTRL_DMA_CTRL_DFULL_Field is neorv32.Bit;
    subtype CTRL_DMA_CTRL_ERROR_Field is neorv32.Bit;
@@ -34,14 +35,16 @@ package neorv32.DMA is
       --  Read-only. log2(descriptor FIFO depth)
       DMA_CTRL_FIFO   : CTRL_DMA_CTRL_FIFO_Field := 16#0#;
       --  unspecified
-      Reserved_20_26  : neorv32.UInt7 := 16#0#;
+      Reserved_20_25  : neorv32.UInt6 := 16#0#;
+      --  Write-only. Write 1 to clear ERROR and DONE flags
+      DMA_CTRL_ACK    : CTRL_DMA_CTRL_ACK_Field := 16#0#;
       --  Read-only. Descriptor FIFO is empty
       DMA_CTRL_DEMPTY : CTRL_DMA_CTRL_DEMPTY_Field := 16#0#;
       --  Read-only. Descriptor FIFO is full
       DMA_CTRL_DFULL  : CTRL_DMA_CTRL_DFULL_Field := 16#0#;
-      --  Error during last transfer; clear by writing one
+      --  Read-only. Error during last transfer
       DMA_CTRL_ERROR  : CTRL_DMA_CTRL_ERROR_Field := 16#0#;
-      --  Transfer(s) done; clear by writing one
+      --  Read-only. Transfer(s) done
       DMA_CTRL_DONE   : CTRL_DMA_CTRL_DONE_Field := 16#0#;
       --  Read-only. Transfer(s) in progress
       DMA_CTRL_BUSY   : CTRL_DMA_CTRL_BUSY_Field := 16#0#;
@@ -54,7 +57,8 @@ package neorv32.DMA is
       DMA_CTRL_START  at 0 range 1 .. 1;
       Reserved_2_15   at 0 range 2 .. 15;
       DMA_CTRL_FIFO   at 0 range 16 .. 19;
-      Reserved_20_26  at 0 range 20 .. 26;
+      Reserved_20_25  at 0 range 20 .. 25;
+      DMA_CTRL_ACK    at 0 range 26 .. 26;
       DMA_CTRL_DEMPTY at 0 range 27 .. 27;
       DMA_CTRL_DFULL  at 0 range 28 .. 28;
       DMA_CTRL_ERROR  at 0 range 29 .. 29;

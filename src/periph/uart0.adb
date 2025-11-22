@@ -27,8 +27,6 @@ package body Uart0 is
       end loop;
       UART0_Periph.CTRL.UART_CTRL_PRSC := UInt3 (Prsc_Sel);
       UART0_Periph.CTRL.UART_CTRL_BAUD := UInt10 (Baud_Div - 1);
-      UART0_Periph.CTRL.UART_CTRL_RX_CLR := 1;
-      UART0_Periph.CTRL.UART_CTRL_TX_CLR := 1;
       UART0_Periph.CTRL.UART_CTRL_IRQ_RX_NEMPTY := 1;
       UART0_Periph.CTRL.UART_CTRL_EN := 1;
       Mie.Write (2#100_00000000_00000000#);
@@ -53,7 +51,8 @@ package body Uart0 is
 
    procedure Put_Char (C : Interfaces.C.char) is
    begin
-      while UART0_Periph.CTRL.UART_CTRL_TX_FULL = 1 loop
+      -- Wait while TX FIFO is full: this is when TX_NFULL = 0
+      while UART0_Periph.CTRL.UART_CTRL_TX_NFULL = 0 loop
          null;
       end loop;
       Write_TX (Interfaces.C.To_Ada (C));
