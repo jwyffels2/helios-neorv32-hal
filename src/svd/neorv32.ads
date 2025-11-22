@@ -15,7 +15,6 @@ package neorv32 is
    -- Base type --
    ---------------
 
-   type UInt64 is new Interfaces.Unsigned_64;
    type UInt32 is new Interfaces.Unsigned_32;
    type UInt16 is new Interfaces.Unsigned_16;
    type Byte is new Interfaces.Unsigned_8;
@@ -86,12 +85,9 @@ package neorv32 is
    SDI_Base : constant System.Address := System'To_Address (16#FFF70000#);
    SLINK_Base : constant System.Address := System'To_Address (16#FFEC0000#);
    DMA_Base : constant System.Address := System'To_Address (16#FFED0000#);
-   CRC_Base : constant System.Address := System'To_Address (16#FFEE0000#);
    PWM_Base : constant System.Address := System'To_Address (16#FFF00000#);
-   XIP_Base : constant System.Address := System'To_Address (16#FFEF0000#);
    GPTMR_Base : constant System.Address := System'To_Address (16#FFF10000#);
    ONEWIRE_Base : constant System.Address := System'To_Address (16#FFF20000#);
-   XIRQ_Base : constant System.Address := System'To_Address (16#FFF30000#);
    CLINT_Base : constant System.Address := System'To_Address (16#FFF40000#);
    UART0_Base : constant System.Address := System'To_Address (16#FFF50000#);
    UART1_Base : constant System.Address := System'To_Address (16#FFF60000#);
@@ -102,6 +98,7 @@ package neorv32 is
    WDT_Base : constant System.Address := System'To_Address (16#FFFB0000#);
    GPIO_Base : constant System.Address := System'To_Address (16#FFFC0000#);
    NEOLED_Base : constant System.Address := System'To_Address (16#FFFD0000#);
+   HWSPINLOCK_Base : constant System.Address := System'To_Address (16#FFF30000#);
    SYSINFO_Base : constant System.Address := System'To_Address (16#FFFE0000#);
 
 end neorv32;
