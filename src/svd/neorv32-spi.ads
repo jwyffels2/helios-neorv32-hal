@@ -109,8 +109,8 @@ package neorv32.SPI is
       SPI_DATA      : DATA_SPI_DATA_Field := 16#0#;
       --  unspecified
       Reserved_8_30 : neorv32.UInt23 := 16#0#;
-      --  *** This field is modified following a read operation ***. SPI TX
-      --  data (0) / command (1) select
+      --  Write-only. *** This field is modified following a read operation
+      --  ***. SPI TX data (0) / command (1) select
       SPI_DATA_CMD  : DATA_SPI_DATA_CMD_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,

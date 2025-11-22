@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD.xsd" >
-  <vendor>stnolting</vendor>
+  <vendor>github.com/stnolting/neorv32</vendor>
   <name>neorv32</name>
   <series>RISC-V</series>
-  <version>1.10.8</version>
+  <version>1.11.5</version>
   <description>The NEORV32 RISC-V Processor</description>
 
   <!-- CPU core -->
@@ -399,7 +399,7 @@
       <registers>
         <register>
           <name>CTRL</name>
-          <description>Control register</description>
+          <description>Control and status register</description>
           <addressOffset>0x00</addressOffset>
           <fields>
             <field>
@@ -408,128 +408,52 @@
               <description>DMA enable flag</description>
             </field>
             <field>
-              <name>DMA_CTRL_AUTO</name>
+              <name>DMA_CTRL_START</name>
               <bitRange>[1:1]</bitRange>
-              <description>Enable automatic transfer trigger (FIRQ-triggered)</description>
+              <access>write-only</access>
+              <description>Start programmed DMA transfer(s)</description>
             </field>
             <field>
-              <name>DMA_CTRL_FENCE</name>
-              <bitRange>[2:2]</bitRange>
-              <description>Issue a downstream FENCE operation when DMA transfer completes (without errors)</description>
-            </field>
-            <field>
-              <name>DMA_CTRL_ERROR_RD</name>
-              <bitRange>[8:8]</bitRange>
+              <name>DMA_CTRL_FIFO</name>
+              <bitRange>[19:16]</bitRange>
               <access>read-only</access>
-              <description>Error during last read access</description>
+              <description>log2(descriptor FIFO depth)</description>
             </field>
             <field>
-              <name>DMA_CTRL_ERROR_WR</name>
-              <bitRange>[9:9]</bitRange>
+              <name>DMA_CTRL_DEMPTY</name>
+              <bitRange>[27:27]</bitRange>
               <access>read-only</access>
-              <description>Error during last write access</description>
+              <description>Descriptor FIFO is empty</description>
             </field>
             <field>
-              <name>DMA_CTRL_BUSY</name>
-              <bitRange>[10:10]</bitRange>
+              <name>DMA_CTRL_DFULL</name>
+              <bitRange>[28:28]</bitRange>
               <access>read-only</access>
-              <description>DMA transfer in progress</description>
+              <description>Descriptor FIFO is full</description>
+            </field>
+            <field>
+              <name>DMA_CTRL_ERROR</name>
+              <bitRange>[29:29]</bitRange>
+              <description>Error during last transfer; clear by writing one</description>
             </field>
             <field>
               <name>DMA_CTRL_DONE</name>
-              <bitRange>[11:11]</bitRange>
-              <description>DMA transfer done; auto-clears on write access</description>
-            </field>
-            <field>
-              <name>DMA_CTRL_FIRQ_TYPE</name>
-              <bitRange>[15:15]</bitRange>
-              <description>Trigger on rising-edge (0) or high-level (1) or selected FIRQ channel</description>
-            </field>
-            <field>
-              <name>DMA_CTRL_FIRQ_SEL</name>
-              <bitRange>[19:16]</bitRange>
-              <description>FIRQ trigger select</description>
-            </field>
-          </fields>
-        </register>
-        <register>
-          <name>SRC_BASE</name>
-          <description>Source base address; shows the last accessed read address on read access</description>
-          <addressOffset>0x04</addressOffset>
-        </register>
-        <register>
-          <name>DST_BASE</name>
-          <description>Destination base address; shows the last accessed write address on read access</description>
-          <addressOffset>0x08</addressOffset>
-        </register>
-        <register>
-          <name>TTYPE</name>
-          <description>Destination base address; shows the last accessed write address on read access</description>
-          <addressOffset>0x0c</addressOffset>
-          <fields>
-            <field>
-              <name>DMA_TTYPE_NUM</name>
-              <bitRange>[23:0]</bitRange>
-              <description>Number of elements to transfer</description>
-            </field>
-            <field>
-              <name>DMA_TTYPE_QSEL</name>
-              <bitRange>[28:27]</bitRange>
-              <description>Data quantity select</description>
-            </field>
-            <field>
-              <name>DMA_TTYPE_SRC_INC</name>
-              <bitRange>[29:29]</bitRange>
-              <description>Source constant (0) or incrementing (1) address</description>
-            </field>
-            <field>
-              <name>DMA_TTYPE_DST_INC</name>
               <bitRange>[30:30]</bitRange>
-              <description>Destination constant (0) or incrementing (1) address</description>
+              <description>Transfer(s) done; clear by writing one</description>
             </field>
             <field>
-              <name>DMA_TTYPE_ENDIAN</name>
+              <name>DMA_CTRL_BUSY</name>
               <bitRange>[31:31]</bitRange>
-              <description>Convert Endianness when set</description>
+              <access>read-only</access>
+              <description>Transfer(s) in progress</description>
             </field>
           </fields>
         </register>
-      </registers>
-    </peripheral>
-
-    <!-- CRC -->
-    <!-- **************************************************************** -->
-    <peripheral>
-      <name>CRC</name>
-      <description>Cyclic redundancy check unit</description>
-      <baseAddress>0xFFEE0000</baseAddress>
-
-      <addressBlock>
-        <offset>0</offset>
-        <size>0x10</size>
-        <usage>registers</usage>
-      </addressBlock>
-
-      <registers>
         <register>
-          <name>MODE</name>
-          <description>CRC mode control (CRC8, CRC16, CRC32)</description>
-          <addressOffset>0x00</addressOffset>
-        </register>
-        <register>
-          <name>POLY</name>
-          <description>CRC polynomial</description>
+          <name>DESC</name>
+          <description>Descriptor FIFO</description>
+          <access>write-only</access>
           <addressOffset>0x04</addressOffset>
-        </register>
-        <register>
-          <name>DATA</name>
-          <description>LSB-aligned data input (bytes)</description>
-          <addressOffset>0x08</addressOffset>
-        </register>
-        <register>
-          <name>SREG</name>
-          <description>CRC shift register</description>
-          <addressOffset>0x0c</addressOffset>
         </register>
       </registers>
     </peripheral>
@@ -543,143 +467,117 @@
 
       <addressBlock>
         <offset>0</offset>
-        <size>0x10</size>
+        <size>0x40</size>
         <usage>registers</usage>
       </addressBlock>
 
       <registers>
         <register>
-          <name>CTRL</name>
-          <description>Control register</description>
+          <name>CHANNEL_CFG[0]</name>
+          <description>Channel 0 configuration register</description>
           <addressOffset>0x00</addressOffset>
           <fields>
             <field>
-              <name>PWM_CTRL_EN</name>
-              <bitRange>[0:0]</bitRange>
-              <description>PWM controller enable flag</description>
+              <name>PWM_CFG_DUTY</name>
+              <bitRange>[7:0]</bitRange>
+              <description>Duty cycle</description>
             </field>
             <field>
-              <name>PWM_CTRL_PRSCx</name>
-              <bitRange>[3:1]</bitRange>
+              <name>PWM_CFG_CDIV</name>
+              <bitRange>[17:8]</bitRange>
+              <description>Clock divider</description>
+            </field>
+            <field>
+              <name>PWM_CFG_POL</name>
+              <bitRange>[27:27]</bitRange>
+              <description>Channel polarity, inverted when set</description>
+            </field>
+            <field>
+              <name>PWM_CFG_PRSC</name>
+              <bitRange>[30:28]</bitRange>
               <description>Clock prescaler select</description>
             </field>
+            <field>
+              <name>PWM_CFG_EN</name>
+              <bitRange>[31:31]</bitRange>
+              <description>Channel enable</description>
+            </field>
           </fields>
         </register>
-        <register>
-          <name>DC[0]</name>
-          <description>Duty cycle register 0</description>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[1]</name>
+          <description>Channel 1 configuration register</description>
           <addressOffset>0x04</addressOffset>
         </register>
-        <register>
-          <name>DC[1]</name>
-          <description>Duty cycle register 1</description>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[2]</name>
+          <description>Channel 2 configuration register</description>
           <addressOffset>0x08</addressOffset>
         </register>
-        <register>
-          <name>DC[2]</name>
-          <description>Duty cycle register 2</description>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[3]</name>
+          <description>Channel 3 configuration register</description>
           <addressOffset>0x0C</addressOffset>
         </register>
-      </registers>
-    </peripheral>
-
-    <!-- XIP -->
-    <!-- **************************************************************** -->
-    <peripheral>
-      <name>XIP</name>
-      <description>Execute In Place Module</description>
-      <baseAddress>0xFFEF0000</baseAddress>
-
-      <addressBlock>
-        <offset>0</offset>
-        <size>0x10</size>
-        <usage>registers</usage>
-      </addressBlock>
-
-      <registers>
-        <register>
-          <name>CTRL</name>
-          <description>Control register</description>
-          <addressOffset>0x00</addressOffset>
-          <fields>
-            <field>
-              <name>XIP_CTRL_EN</name>
-              <bitRange>[0:0]</bitRange>
-              <description>XIP module enable flag</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_PRSC</name>
-              <bitRange>[3:1]</bitRange>
-              <description>SPI clock prescaler select</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_CPOL</name>
-              <bitRange>[4:4]</bitRange>
-              <description>SPI clock (idle) polarity</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_CPHA</name>
-              <bitRange>[5:5]</bitRange>
-              <description>SPI clock phase</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_SPI_NBYTES</name>
-              <bitRange>[9:6]</bitRange>
-              <description>Number of bytes in SPI transmission</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_XIP_EN</name>
-              <bitRange>[10:10]</bitRange>
-              <description>XIP mode enable</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_XIP_ABYTES</name>
-              <bitRange>[12:11]</bitRange>
-              <description>Number of XIP address bytes (minus 1)</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_RD_CMD</name>
-              <bitRange>[20:13]</bitRange>
-              <description>SPI flash read command</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_SPI_CSEN</name>
-              <bitRange>[21:21]</bitRange>
-              <description>SPI chip-select enable</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_HIGHSPEED</name>
-              <bitRange>[22:22]</bitRange>
-              <description>SPI high-speed mode enable (ignoring XIP_CTRL_PRSC)</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_CDIV</name>
-              <bitRange>[26:23]</bitRange>
-              <description>SPI clock divider</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_PHY_BUSY</name>
-              <bitRange>[30:30]</bitRange>
-              <access>read-only</access>
-              <description>SPI PHY busy</description>
-            </field>
-            <field>
-              <name>XIP_CTRL_XIP_BUSY</name>
-              <bitRange>[31:31]</bitRange>
-              <access>read-only</access>
-              <description>XIP access in progress</description>
-            </field>
-          </fields>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[4]</name>
+          <description>Channel 4 configuration register</description>
+          <addressOffset>0x10</addressOffset>
         </register>
-        <register>
-          <name>DATA_LO</name>
-          <description>Direct SPI access - data register low</description>
-          <addressOffset>0x08</addressOffset>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[5]</name>
+          <description>Channel 5 configuration register</description>
+          <addressOffset>0x14</addressOffset>
         </register>
-        <register>
-          <name>DATA_HI</name>
-          <description>Direct SPI access - data register high</description>
-          <addressOffset>0x0C</addressOffset>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[6]</name>
+          <description>Channel 6 configuration register</description>
+          <addressOffset>0x18</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[7]</name>
+          <description>Channel 7 configuration register</description>
+          <addressOffset>0x1C</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[8]</name>
+          <description>Channel 8 configuration register</description>
+          <addressOffset>0x20</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[9]</name>
+          <description>Channel 9 configuration register</description>
+          <addressOffset>0x24</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[10]</name>
+          <description>Channel 10 configuration register</description>
+          <addressOffset>0x28</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[11]</name>
+          <description>Channel 11 configuration register</description>
+          <addressOffset>0x2C</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[12]</name>
+          <description>Channel 12 configuration register</description>
+          <addressOffset>0x30</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[13]</name>
+          <description>Channel 13 configuration register</description>
+          <addressOffset>0x34</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[14]</name>
+          <description>Channel 14 configuration register</description>
+          <addressOffset>0x38</addressOffset>
+        </register>
+        <register derivedFrom="CHANNEL_CFG[0]">
+          <name>CHANNEL_CFG[15]</name>
+          <description>Channel 15 configuration register</description>
+          <addressOffset>0x3C</addressOffset>
         </register>
       </registers>
     </peripheral>
@@ -716,13 +614,9 @@
               <description>Clock prescaler select</description>
             </field>
             <field>
-              <name>GPTMR_CTRL_MODE</name>
-              <bitRange>[4:4]</bitRange>
-              <description>Operation mode (0=single-shot, 1=continuous)</description>
-            </field>
-            <field>
               <name>GPTMR_CTRL_IRQ_CLR</name>
               <bitRange>[30:30]</bitRange>
+              <access>write-only</access>
               <description>Set to clear timer-match interrupt</description>
             </field>
             <field>
@@ -776,6 +670,7 @@
             <field>
               <name>ONEWIRE_CTRL_CLEAR</name>
               <bitRange>[1:1]</bitRange>
+              <access>write-only</access>
               <description>Clear RXT FIFO, auto-clears</description>
             </field>
             <field>
@@ -834,6 +729,7 @@
             <field>
               <name>ONEWIRE_DCMD_CMD</name>
               <bitRange>[9:8]</bitRange>
+              <access>write-only</access>
               <description>Operation command</description>
             </field>
             <field>
@@ -843,45 +739,6 @@
               <description>Bus presence detected</description>
             </field>
           </fields>
-        </register>
-      </registers>
-    </peripheral>
-
-    <!-- XIRQ -->
-    <!-- **************************************************************** -->
-    <peripheral>
-      <name>XIRQ</name>
-      <description>External interrupts controller</description>
-      <baseAddress>0xFFF30000</baseAddress>
-
-      <interrupt><name>XIRQ_FIRQ</name><value>8</value></interrupt>
-
-      <addressBlock>
-        <offset>0</offset>
-        <size>0x14</size>
-        <usage>registers</usage>
-      </addressBlock>
-
-      <registers>
-        <register>
-          <name>EIE</name>
-          <description>External IRQ channel enable register</description>
-          <addressOffset>0x00</addressOffset>
-        </register>
-        <register>
-          <name>ESC</name>
-          <description>External IRQ source register</description>
-          <addressOffset>0x04</addressOffset>
-        </register>
-        <register>
-          <name>TTYP</name>
-          <description>External IRQ trigger type (level/edge)</description>
-          <addressOffset>0x08</addressOffset>
-        </register>
-        <register>
-          <name>TPOL</name>
-          <description>External IRQ trigger polarity (high/low, rising/falling)</description>
-          <addressOffset>0x0c</addressOffset>
         </register>
       </registers>
     </peripheral>
@@ -1215,6 +1072,7 @@
             <field>
               <name>SPI_DATA_CMD</name>
               <bitRange>[31:31]</bitRange>
+              <access>write-only</access>
               <description>SPI TX data (0) / command (1) select</description>
             </field>
           </fields>
@@ -1356,11 +1214,13 @@
             <field>
               <name>TWD_CTRL_CLR_RX</name>
               <bitRange>[1:1]</bitRange>
+              <access>write-only</access>
               <description>Clear RX FIFO, flag auto-clears</description>
             </field>
             <field>
               <name>TWD_CTRL_CLR_TX</name>
               <bitRange>[2:2]</bitRange>
+              <access>write-only</access>
               <description>Clear TX FIFO, flag auto-clears</description>
             </field>
             <field>
@@ -1389,10 +1249,26 @@
               <description>IRQ if TX FIFO empty</description>
             </field>
             <field>
-              <name>TWD_CTRL_FIFO</name>
-              <bitRange>[18:15]</bitRange>
+              <name>TWD_CTRL_TX_DUMMY_EN</name>
+              <bitRange>[14:14]</bitRange>
+              <description>Repeat sending last sent byte if TY FIFO is empty</description>
+            </field>
+            <field>
+              <name>TWD_CTRL_HIDE_READ</name>
+              <bitRange>[15:15]</bitRange>
+              <description>Send no ACK on READ access if TX FIFO is empty</description>
+            </field>
+            <field>
+              <name>TWD_CTRL_RX_FIFO</name>
+              <bitRange>[19:16]</bitRange>
               <access>read-only</access>
-              <description>log2(TWD FIFO size)</description>
+              <description>log2(TWD RX FIFO size)</description>
+            </field>
+            <field>
+              <name>TWD_CTRL_TX_FIFO</name>
+              <bitRange>[23:20]</bitRange>
+              <access>read-only</access>
+              <description>log2(TWD TX FIFO size)</description>
             </field>
             <field>
               <name>TWD_CTRL_RX_AVAIL</name>
@@ -1481,10 +1357,11 @@
             <field>
               <name>TRNG_CTRL_FIFO_CLR</name>
               <bitRange>[1:1]</bitRange>
+              <access>write-only</access>
               <description>Clear data FIFO when set (flag auto clears)</description>
             </field>
             <field>
-              <name>ONEWIRE_CTRL_FIFO_SIZE</name>
+              <name>TRNG_CTRL_FIFO_SIZE</name>
               <bitRange>[5:2]</bitRange>
               <access>read-only</access>
               <description>log2(TRNG FIFO size)</description>
@@ -1550,23 +1427,13 @@
               <description>Lock write access to control register, clears on reset (HW or WDT) only</description>
             </field>
             <field>
-              <name>WDT_CTRL_DBEN</name>
-              <bitRange>[2:2]</bitRange>
-              <description>Allow WDT to continue operation even when in debug mode</description>
-            </field>
-            <field>
-              <name>WDT_CTRL_SEN</name>
-              <bitRange>[3:3]</bitRange>
-              <description>Allow WDT to continue operation even when in sleep mode</description>
-            </field>
-            <field>
               <name>WDT_CTRL_STRICT</name>
-              <bitRange>[4:4]</bitRange>
+              <bitRange>[2:2]</bitRange>
               <description>Force hardware reset if reset password is incorrect or if write attempt to locked CTRL register</description>
             </field>
             <field>
               <name>WDT_CTRL_RCAUSE</name>
-              <bitRange>[6:5]</bitRange>
+              <bitRange>[4:3]</bitRange>
               <access>read-only</access>
               <description>Cause of last system reset: 0=external reset, 1=OCD reset, 2=WDT reset, 3=WDT access violation</description>
             </field>
@@ -1577,7 +1444,6 @@
             </field>
           </fields>
         </register>
-
         <register>
           <name>RESET</name>
           <description>Watchdog reset register</description>
@@ -1586,6 +1452,7 @@
             <field>
               <name>WDT_RESET</name>
               <bitRange>[31:0]</bitRange>
+              <access>write-only</access>
               <description>Write password to reset/feed the watchdog (0x709D1AB3)</description>
             </field>
           </fields>
@@ -1600,34 +1467,45 @@
       <description>General purpose input/output port</description>
       <baseAddress>0xFFFC0000</baseAddress>
 
+      <interrupt><name>GPIO_FIRQ</name><value>8</value></interrupt>
+
       <addressBlock>
         <offset>0</offset>
-        <size>0x10</size>
+        <size>0x20</size>
         <usage>registers</usage>
       </addressBlock>
 
       <registers>
         <register>
-          <name>INPUT[0]</name>
-          <description>Parallel input register - low</description>
+          <name>PORT_IN</name>
+          <description>Parallel input port</description>
           <addressOffset>0x00</addressOffset>
           <access>read-only</access>
         </register>
         <register>
-          <name>INPUT[1]</name>
-          <description>Parallel input register - high</description>
+          <name>PORT_OUT</name>
+          <description>Parallel output port</description>
           <addressOffset>0x04</addressOffset>
-          <access>read-only</access>
         </register>
         <register>
-          <name>OUTPUT[0]</name>
-          <description>Parallel output register - low</description>
-          <addressOffset>0x08</addressOffset>
+          <name>IRQ_TYPE</name>
+          <description>Interrupt trigger type (level/edge) for each input pin</description>
+          <addressOffset>0x10</addressOffset>
         </register>
         <register>
-          <name>OUTPUT[1]</name>
-          <description>Parallel output register - high</description>
-          <addressOffset>0x0C</addressOffset>
+          <name>IRQ_POLARITY</name>
+          <description>Interrupt trigger polarity (rising/falling or high/low) for each input pin</description>
+          <addressOffset>0x14</addressOffset>
+        </register>
+        <register>
+          <name>IRQ_ENABLE</name>
+          <description>Interrupt enable for each input pin</description>
+          <addressOffset>0x18</addressOffset>
+        </register>
+        <register>
+          <name>IRQ_PENDING</name>
+          <description>Interrupt pending for each input pin; cleared by writing zero</description>
+          <addressOffset>0x1C</addressOffset>
         </register>
       </registers>
     </peripheral>
@@ -1728,7 +1606,37 @@
         <register>
           <name>DATA</name>
           <description>Data register</description>
+          <access>write-only</access>
           <addressOffset>0x04</addressOffset>
+        </register>
+      </registers>
+    </peripheral>
+
+    <!-- HWSPINLOCK -->
+    <!-- **************************************************************** -->
+    <peripheral>
+      <name>HWSPINLOCK</name>
+      <description>Hardware spinlocks</description>
+      <baseAddress>0xFFF30000</baseAddress>
+
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x84</size>
+        <usage>registers</usage>
+      </addressBlock>
+
+      <registers>
+        <register>
+          <name>LOCK</name>
+          <description>32 locks, one binary spinlock per word</description>
+          <addressOffset>0x00</addressOffset>
+          <access>read-only</access>
+        </register>
+        <register>
+          <name>STATUS</name>
+          <description>Status of all 32 spinlocks</description>
+          <addressOffset>0x80</addressOffset>
+          <access>read-only</access>
         </register>
       </registers>
     </peripheral>
@@ -1742,7 +1650,7 @@
 
       <addressBlock>
         <offset>0</offset>
-        <size>0x20</size>
+        <size>0x10</size>
         <usage>registers</usage>
       </addressBlock>
 
@@ -1772,21 +1680,18 @@
           <fields>
             <field><name>SYSINFO_SOC_BOOTLOADER</name><bitRange>[0:0]</bitRange><description>Bootloader implemented</description></field>
             <field><name>SYSINFO_SOC_XBUS</name><bitRange>[1:1]</bitRange><description>External bus interface implemented</description></field>
-            <field><name>SYSINFO_SOC_MEM_INT_IMEM</name><bitRange>[2:2]</bitRange><description>Processor-internal instruction memory implemented</description></field>
-            <field><name>SYSINFO_SOC_MEM_INT_DMEM</name><bitRange>[3:3]</bitRange><description>Processor-internal data memory implemented</description></field>
+            <field><name>SYSINFO_SOC_IMEM</name><bitRange>[2:2]</bitRange><description>Processor-internal instruction memory implemented</description></field>
+            <field><name>SYSINFO_SOC_DMEM</name><bitRange>[3:3]</bitRange><description>Processor-internal data memory implemented</description></field>
             <field><name>SYSINFO_SOC_OCD</name><bitRange>[4:4]</bitRange><description>On-chip debugger implemented</description></field>
             <field><name>SYSINFO_SOC_ICACHE</name><bitRange>[5:5]</bitRange><description>Processor-internal instruction cache implemented</description></field>
             <field><name>SYSINFO_SOC_DCACHE</name><bitRange>[6:6]</bitRange><description>Processor-internal data cache implemented</description></field>
-            <field><name>SYSINFO_SOC_XBUS_CACHE</name><bitRange>[8:8]</bitRange><description>External bus cache implemented</description></field>
-            <field><name>SYSINFO_SOC_XIP</name><bitRange>[9:9]</bitRange><description>Execute in place module implemented</description></field>
-            <field><name>SYSINFO_SOC_XIP_CACHE</name><bitRange>[10:10]</bitRange><description>Execute in place cache implemented</description></field>
             <field><name>SYSINFO_SOC_OCD_AUTH</name><bitRange>[11:11]</bitRange><description>On-chip debugger authentication implemented</description></field>
             <field><name>SYSINFO_SOC_IMEM_ROM</name><bitRange>[12:12]</bitRange><description>Processor-internal instruction memory implemented as pre-initialized ROM</description></field>
             <field><name>SYSINFO_SOC_IO_TWD</name><bitRange>[13:13]</bitRange><description>Two-wire device implemented</description></field>
             <field><name>SYSINFO_SOC_IO_DMA</name><bitRange>[14:14]</bitRange><description>Direct memory access controller implemented</description></field>
             <field><name>SYSINFO_SOC_IO_GPIO</name><bitRange>[15:15]</bitRange><description>General purpose input/output port unit implemented</description></field>
             <field><name>SYSINFO_SOC_IO_CLINT</name><bitRange>[16:16]</bitRange><description>Core local interruptor implemented</description></field>
-            <field><name>SYSINFO_SOC_IO_UART0</name><bitRange>[17:17]</bitRange><description>Primary universal asynchronous receiver/transmitter 0 implemented</description></field>
+            <field><name>SYSINFO_SOC_IO_UART0</name><bitRange>[17:17]</bitRange><description>Primary universal asynchronous receiver/transmitter implemented</description></field>
             <field><name>SYSINFO_SOC_IO_SPI</name><bitRange>[18:18]</bitRange><description>Serial peripheral interface implemented</description></field>
             <field><name>SYSINFO_SOC_IO_TWI</name><bitRange>[19:19]</bitRange><description>Two-wire interface implemented</description></field>
             <field><name>SYSINFO_SOC_IO_PWM</name><bitRange>[20:20]</bitRange><description>Pulse-width modulation unit implemented</description></field>
@@ -1794,13 +1699,12 @@
             <field><name>SYSINFO_SOC_IO_CFS</name><bitRange>[22:22]</bitRange><description>Custom functions subsystem implemented</description></field>
             <field><name>SYSINFO_SOC_IO_TRNG</name><bitRange>[23:23]</bitRange><description>True random number generator implemented</description></field>
             <field><name>SYSINFO_SOC_IO_SDI</name><bitRange>[24:24]</bitRange><description>Serial data interface implemented</description></field>
-            <field><name>SYSINFO_SOC_IO_UART1</name><bitRange>[25:25]</bitRange><description>Secondary universal asynchronous receiver/transmitter 1 implemented</description></field>
+            <field><name>SYSINFO_SOC_IO_UART1</name><bitRange>[25:25]</bitRange><description>Secondary universal asynchronous receiver/transmitter implemented</description></field>
+            <field><name>SYSINFO_SOC_IO_HWSPINLOCK</name><bitRange>[27:27]</bitRange><description>Hardware spinlocks module implemented</description></field>
             <field><name>SYSINFO_SOC_IO_NEOLED</name><bitRange>[26:26]</bitRange><description>NeoPixel-compatible smart LED interface implemented</description></field>
-            <field><name>SYSINFO_SOC_IO_XIRQ</name><bitRange>[27:27]</bitRange><description>External interrupt controller implemented</description></field>
             <field><name>SYSINFO_SOC_IO_GPTMR</name><bitRange>[28:28]</bitRange><description>General purpose timer implemented</description></field>
             <field><name>SYSINFO_SOC_IO_SLINK</name><bitRange>[29:29]</bitRange><description>Stream link interface implemented</description></field>
             <field><name>SYSINFO_SOC_IO_ONEWIRE</name><bitRange>[30:30]</bitRange><description>1-wire interface controller implemented</description></field>
-            <field><name>SYSINFO_SOC_IO_CRC</name><bitRange>[31:31]</bitRange><description>Cyclic redundancy check unit implemented</description></field>
           </fields>
         </register>
         <register>
@@ -1813,10 +1717,6 @@
             <field><name>SYSINFO_CACHE_INST_NUM_BLOCKS</name><bitRange>[7:4]</bitRange><description>i-cache: log2(Number of cache blocks)</description></field>
             <field><name>SYSINFO_CACHE_DATA_BLOCK_SIZE</name><bitRange>[11:8]</bitRange><description>d-cache: log2(Block size in bytes)</description></field>
             <field><name>SYSINFO_CACHE_DATA_NUM_BLOCKS</name><bitRange>[15:12]</bitRange><description>d-cache: log2(Number of cache blocks)</description></field>
-            <field><name>SYSINFO_CACHE_XIP_BLOCK_SIZE</name><bitRange>[19:16]</bitRange><description>xip-cache: log2(Block size in bytes)</description></field>
-            <field><name>SYSINFO_CACHE_XIP_NUM_BLOCKS</name><bitRange>[23:20]</bitRange><description>xip-cache: log2(Number of cache blocks)</description></field>
-            <field><name>SYSINFO_CACHE_XBUS_BLOCK_SIZE</name><bitRange>[27:24]</bitRange><description>xbus-cache: log2(Block size in bytes)</description></field>
-            <field><name>SYSINFO_CACHE_XBUS_NUM_BLOCKS</name><bitRange>[31:28]</bitRange><description>xbus-cache: log2(Number of cache blocks)</description></field>
           </fields>
         </register>
       </registers>
