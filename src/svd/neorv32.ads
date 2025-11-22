@@ -14,7 +14,7 @@ package neorv32 is
    ---------------
    -- Base type --
    ---------------
-
+   type UInt64 is new Interfaces.Unsigned_64;
    type UInt32 is new Interfaces.Unsigned_32;
    type UInt16 is new Interfaces.Unsigned_16;
    type Byte is new Interfaces.Unsigned_8;
