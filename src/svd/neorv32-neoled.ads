@@ -15,16 +15,12 @@ package neorv32.NEOLED is
    ---------------
 
    subtype CTRL_NEOLED_CTRL_EN_Field is neorv32.Bit;
-   subtype CTRL_NEOLED_CTRL_MODE_Field is neorv32.Bit;
-   subtype CTRL_NEOLED_CTRL_STROBE_Field is neorv32.Bit;
    subtype CTRL_NEOLED_CTRL_PRSC_Field is neorv32.UInt3;
-   subtype CTRL_NEOLED_CTRL_BUFS_Field is neorv32.UInt4;
    subtype CTRL_NEOLED_CTRL_T_TOT_Field is neorv32.UInt5;
-   subtype CTRL_NEOLED_CTRL_T_ZERO_H_Field is neorv32.UInt5;
-   subtype CTRL_NEOLED_CTRL_T_ONE_H_Field is neorv32.UInt5;
-   subtype CTRL_NEOLED_CTRL_IRQ_CONF_Field is neorv32.Bit;
+   subtype CTRL_NEOLED_CTRL_T_0H_Field is neorv32.UInt5;
+   subtype CTRL_NEOLED_CTRL_T_1H_Field is neorv32.UInt5;
+   subtype CTRL_NEOLED_CTRL_FIFO_Field is neorv32.UInt4;
    subtype CTRL_NEOLED_CTRL_TX_EMPTY_Field is neorv32.Bit;
-   subtype CTRL_NEOLED_CTRL_TX_HALF_Field is neorv32.Bit;
    subtype CTRL_NEOLED_CTRL_TX_FULL_Field is neorv32.Bit;
    subtype CTRL_NEOLED_CTRL_TX_BUSY_Field is neorv32.Bit;
 
@@ -32,29 +28,20 @@ package neorv32.NEOLED is
    type CTRL_Register is record
       --  NEOLED enable flag
       NEOLED_CTRL_EN       : CTRL_NEOLED_CTRL_EN_Field := 16#0#;
-      --  TX mode (0=24-bit, 1=32-bit)
-      NEOLED_CTRL_MODE     : CTRL_NEOLED_CTRL_MODE_Field := 16#0#;
-      --  Strobe (0=send normal data, 1=send RESET command on data write)
-      NEOLED_CTRL_STROBE   : CTRL_NEOLED_CTRL_STROBE_Field := 16#0#;
       --  Clock prescaler select
       NEOLED_CTRL_PRSC     : CTRL_NEOLED_CTRL_PRSC_Field := 16#0#;
-      --  Read-only. log2(tx buffer size)
-      NEOLED_CTRL_BUFS     : CTRL_NEOLED_CTRL_BUFS_Field := 16#0#;
       --  pulse-clock ticks per total period bit
       NEOLED_CTRL_T_TOT    : CTRL_NEOLED_CTRL_T_TOT_Field := 16#0#;
       --  pulse-clock ticks per ZERO high-time
-      NEOLED_CTRL_T_ZERO_H : CTRL_NEOLED_CTRL_T_ZERO_H_Field := 16#0#;
+      NEOLED_CTRL_T_0H     : CTRL_NEOLED_CTRL_T_0H_Field := 16#0#;
       --  pulse-clock ticks per ONE high-time
-      NEOLED_CTRL_T_ONE_H  : CTRL_NEOLED_CTRL_T_ONE_H_Field := 16#0#;
+      NEOLED_CTRL_T_1H     : CTRL_NEOLED_CTRL_T_1H_Field := 16#0#;
       --  unspecified
-      Reserved_25_26       : neorv32.UInt2 := 16#0#;
-      --  TX FIFO interrupt: 0=IRQ if FIFO is less than half-full, 1=IRQ if
-      --  FIFO is empty
-      NEOLED_CTRL_IRQ_CONF : CTRL_NEOLED_CTRL_IRQ_CONF_Field := 16#0#;
+      Reserved_19_24       : neorv32.UInt6 := 16#0#;
+      --  Read-only. log2(TX FIFO size)
+      NEOLED_CTRL_FIFO     : CTRL_NEOLED_CTRL_FIFO_Field := 16#0#;
       --  Read-only. TX FIFO is empty
       NEOLED_CTRL_TX_EMPTY : CTRL_NEOLED_CTRL_TX_EMPTY_Field := 16#0#;
-      --  Read-only. TX FIFO is at least half-full
-      NEOLED_CTRL_TX_HALF  : CTRL_NEOLED_CTRL_TX_HALF_Field := 16#0#;
       --  Read-only. TX FIFO is full
       NEOLED_CTRL_TX_FULL  : CTRL_NEOLED_CTRL_TX_FULL_Field := 16#0#;
       --  Read-only. busy flag
@@ -65,17 +52,13 @@ package neorv32.NEOLED is
 
    for CTRL_Register use record
       NEOLED_CTRL_EN       at 0 range 0 .. 0;
-      NEOLED_CTRL_MODE     at 0 range 1 .. 1;
-      NEOLED_CTRL_STROBE   at 0 range 2 .. 2;
-      NEOLED_CTRL_PRSC     at 0 range 3 .. 5;
-      NEOLED_CTRL_BUFS     at 0 range 6 .. 9;
-      NEOLED_CTRL_T_TOT    at 0 range 10 .. 14;
-      NEOLED_CTRL_T_ZERO_H at 0 range 15 .. 19;
-      NEOLED_CTRL_T_ONE_H  at 0 range 20 .. 24;
-      Reserved_25_26       at 0 range 25 .. 26;
-      NEOLED_CTRL_IRQ_CONF at 0 range 27 .. 27;
-      NEOLED_CTRL_TX_EMPTY at 0 range 28 .. 28;
-      NEOLED_CTRL_TX_HALF  at 0 range 29 .. 29;
+      NEOLED_CTRL_PRSC     at 0 range 1 .. 3;
+      NEOLED_CTRL_T_TOT    at 0 range 4 .. 8;
+      NEOLED_CTRL_T_0H     at 0 range 9 .. 13;
+      NEOLED_CTRL_T_1H     at 0 range 14 .. 18;
+      Reserved_19_24       at 0 range 19 .. 24;
+      NEOLED_CTRL_FIFO     at 0 range 25 .. 28;
+      NEOLED_CTRL_TX_EMPTY at 0 range 29 .. 29;
       NEOLED_CTRL_TX_FULL  at 0 range 30 .. 30;
       NEOLED_CTRL_TX_BUSY  at 0 range 31 .. 31;
    end record;
@@ -87,15 +70,21 @@ package neorv32.NEOLED is
    --  Smart LED hardware interface
    type NEOLED_Peripheral is record
       --  Control register
-      CTRL : aliased CTRL_Register;
-      --  Data register
-      DATA : aliased neorv32.UInt32;
+      CTRL   : aliased CTRL_Register;
+      --  Send 24-bit data
+      DATA24 : aliased neorv32.UInt32;
+      --  Send 32-bit data
+      DATA32 : aliased neorv32.UInt32;
+      --  Write any value to send STROBE command
+      STROBE : aliased neorv32.UInt32;
    end record
      with Volatile;
 
    for NEOLED_Peripheral use record
-      CTRL at 16#0# range 0 .. 31;
-      DATA at 16#4# range 0 .. 31;
+      CTRL   at 16#0# range 0 .. 31;
+      DATA24 at 16#4# range 0 .. 31;
+      DATA32 at 16#8# range 0 .. 31;
+      STROBE at 16#C# range 0 .. 31;
    end record;
 
    --  Smart LED hardware interface

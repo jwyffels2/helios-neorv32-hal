@@ -22,8 +22,6 @@ package neorv32.TWD is
    subtype CTRL_TWD_CTRL_IRQ_RX_AVAIL_Field is neorv32.Bit;
    subtype CTRL_TWD_CTRL_IRQ_RX_FULL_Field is neorv32.Bit;
    subtype CTRL_TWD_CTRL_IRQ_TX_EMPTY_Field is neorv32.Bit;
-   subtype CTRL_TWD_CTRL_TX_DUMMY_EN_Field is neorv32.Bit;
-   subtype CTRL_TWD_CTRL_HIDE_READ_Field is neorv32.Bit;
    subtype CTRL_TWD_CTRL_RX_FIFO_Field is neorv32.UInt4;
    subtype CTRL_TWD_CTRL_TX_FIFO_Field is neorv32.UInt4;
    subtype CTRL_TWD_CTRL_RX_AVAIL_Field is neorv32.Bit;
@@ -52,10 +50,8 @@ package neorv32.TWD is
       TWD_CTRL_IRQ_RX_FULL  : CTRL_TWD_CTRL_IRQ_RX_FULL_Field := 16#0#;
       --  IRQ if TX FIFO empty
       TWD_CTRL_IRQ_TX_EMPTY : CTRL_TWD_CTRL_IRQ_TX_EMPTY_Field := 16#0#;
-      --  Repeat sending last sent byte if TY FIFO is empty
-      TWD_CTRL_TX_DUMMY_EN  : CTRL_TWD_CTRL_TX_DUMMY_EN_Field := 16#0#;
-      --  Send no ACK on READ access if TX FIFO is empty
-      TWD_CTRL_HIDE_READ    : CTRL_TWD_CTRL_HIDE_READ_Field := 16#0#;
+      --  unspecified
+      Reserved_14_15        : neorv32.UInt2 := 16#0#;
       --  Read-only. log2(TWD RX FIFO size)
       TWD_CTRL_RX_FIFO      : CTRL_TWD_CTRL_RX_FIFO_Field := 16#0#;
       --  Read-only. log2(TWD TX FIFO size)
@@ -89,8 +85,7 @@ package neorv32.TWD is
       TWD_CTRL_IRQ_RX_AVAIL at 0 range 11 .. 11;
       TWD_CTRL_IRQ_RX_FULL  at 0 range 12 .. 12;
       TWD_CTRL_IRQ_TX_EMPTY at 0 range 13 .. 13;
-      TWD_CTRL_TX_DUMMY_EN  at 0 range 14 .. 14;
-      TWD_CTRL_HIDE_READ    at 0 range 15 .. 15;
+      Reserved_14_15        at 0 range 14 .. 15;
       TWD_CTRL_RX_FIFO      at 0 range 16 .. 19;
       TWD_CTRL_TX_FIFO      at 0 range 20 .. 23;
       Reserved_24_24        at 0 range 24 .. 24;

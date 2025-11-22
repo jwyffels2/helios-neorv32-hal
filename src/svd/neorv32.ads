@@ -15,6 +15,7 @@ package neorv32 is
    -- Base type --
    ---------------
    type UInt64 is new Interfaces.Unsigned_64;
+
    type UInt32 is new Interfaces.Unsigned_32;
    type UInt16 is new Interfaces.Unsigned_16;
    type Byte is new Interfaces.Unsigned_8;
@@ -98,7 +99,7 @@ package neorv32 is
    WDT_Base : constant System.Address := System'To_Address (16#FFFB0000#);
    GPIO_Base : constant System.Address := System'To_Address (16#FFFC0000#);
    NEOLED_Base : constant System.Address := System'To_Address (16#FFFD0000#);
-   HWSPINLOCK_Base : constant System.Address := System'To_Address (16#FFF30000#);
+   TRACER_Base : constant System.Address := System'To_Address (16#FFF30000#);
    SYSINFO_Base : constant System.Address := System'To_Address (16#FFFE0000#);
 
 end neorv32;

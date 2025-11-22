@@ -16,7 +16,6 @@ package neorv32.WDT is
 
    subtype CTRL_WDT_CTRL_EN_Field is neorv32.Bit;
    subtype CTRL_WDT_CTRL_LOCK_Field is neorv32.Bit;
-   subtype CTRL_WDT_CTRL_STRICT_Field is neorv32.Bit;
    subtype CTRL_WDT_CTRL_RCAUSE_Field is neorv32.UInt2;
    subtype CTRL_WDT_CTRL_TIMEOUT_Field is neorv32.UInt24;
 
@@ -24,17 +23,13 @@ package neorv32.WDT is
    type CTRL_Register is record
       --  WDT enable flag
       WDT_CTRL_EN      : CTRL_WDT_CTRL_EN_Field := 16#0#;
-      --  Lock write access to control register, clears on reset (HW or WDT)
-      --  only
+      --  Lock write access to control register, clears on reset only
       WDT_CTRL_LOCK    : CTRL_WDT_CTRL_LOCK_Field := 16#0#;
-      --  Force hardware reset if reset password is incorrect or if write
-      --  attempt to locked CTRL register
-      WDT_CTRL_STRICT  : CTRL_WDT_CTRL_STRICT_Field := 16#0#;
       --  Read-only. Cause of last system reset: 0=external reset, 1=OCD reset,
       --  2=WDT reset, 3=WDT access violation
       WDT_CTRL_RCAUSE  : CTRL_WDT_CTRL_RCAUSE_Field := 16#0#;
       --  unspecified
-      Reserved_5_7     : neorv32.UInt3 := 16#0#;
+      Reserved_4_7     : neorv32.UInt4 := 16#0#;
       --  Timeout value
       WDT_CTRL_TIMEOUT : CTRL_WDT_CTRL_TIMEOUT_Field := 16#0#;
    end record
@@ -44,9 +39,8 @@ package neorv32.WDT is
    for CTRL_Register use record
       WDT_CTRL_EN      at 0 range 0 .. 0;
       WDT_CTRL_LOCK    at 0 range 1 .. 1;
-      WDT_CTRL_STRICT  at 0 range 2 .. 2;
-      WDT_CTRL_RCAUSE  at 0 range 3 .. 4;
-      Reserved_5_7     at 0 range 5 .. 7;
+      WDT_CTRL_RCAUSE  at 0 range 2 .. 3;
+      Reserved_4_7     at 0 range 4 .. 7;
       WDT_CTRL_TIMEOUT at 0 range 8 .. 31;
    end record;
 
