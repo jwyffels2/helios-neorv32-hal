@@ -14,34 +14,65 @@ package neorv32.GPTMR is
    -- Registers --
    ---------------
 
-   subtype CTRL_GPTMR_CTRL_EN_Field is neorv32.Bit;
-   subtype CTRL_GPTMR_CTRL_PRSC_Field is neorv32.UInt3;
-   subtype CTRL_GPTMR_CTRL_IRQ_CLR_Field is neorv32.Bit;
-   subtype CTRL_GPTMR_CTRL_IRQ_PND_Field is neorv32.Bit;
+   subtype CSR0_ENABLE_Field is neorv32.UInt16;
+   subtype CSR0_MODE_Field is neorv32.UInt16;
 
-   --  Control register
-   type CTRL_Register is record
-      --  Timer enable flag
-      GPTMR_CTRL_EN      : CTRL_GPTMR_CTRL_EN_Field := 16#0#;
-      --  Clock prescaler select
-      GPTMR_CTRL_PRSC    : CTRL_GPTMR_CTRL_PRSC_Field := 16#0#;
-      --  unspecified
-      Reserved_4_29      : neorv32.UInt26 := 16#0#;
-      --  Write-only. Set to clear timer-match interrupt
-      GPTMR_CTRL_IRQ_CLR : CTRL_GPTMR_CTRL_IRQ_CLR_Field := 16#0#;
-      --  Read-only. Timer-match interrupt pending
-      GPTMR_CTRL_IRQ_PND : CTRL_GPTMR_CTRL_IRQ_PND_Field := 16#0#;
+   --  Control and status register 0
+   type CSR0_Register is record
+      --  Per-slice enable bit
+      ENABLE : CSR0_ENABLE_Field := 16#0#;
+      --  Per-slice mode bit (0 = single-shot mode, 1 = continuous mode)
+      MODE   : CSR0_MODE_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
 
-   for CTRL_Register use record
-      GPTMR_CTRL_EN      at 0 range 0 .. 0;
-      GPTMR_CTRL_PRSC    at 0 range 1 .. 3;
-      Reserved_4_29      at 0 range 4 .. 29;
-      GPTMR_CTRL_IRQ_CLR at 0 range 30 .. 30;
-      GPTMR_CTRL_IRQ_PND at 0 range 31 .. 31;
+   for CSR0_Register use record
+      ENABLE at 0 range 0 .. 15;
+      MODE   at 0 range 16 .. 31;
    end record;
+
+   subtype CSR1_IRQ_Field is neorv32.UInt16;
+   subtype CSR1_PRSC_Field is neorv32.UInt3;
+
+   --  Control and status register 1
+   type CSR1_Register is record
+      --  Per-slice interrupt-pending bit; write 0 to clear
+      IRQ            : CSR1_IRQ_Field := 16#0#;
+      --  Global clock prescaler select
+      PRSC           : CSR1_PRSC_Field := 16#0#;
+      --  unspecified
+      Reserved_19_31 : neorv32.UInt13 := 16#0#;
+   end record
+     with Volatile_Full_Access, Object_Size => 32,
+          Bit_Order => System.Low_Order_First;
+
+   for CSR1_Register use record
+      IRQ            at 0 range 0 .. 15;
+      PRSC           at 0 range 16 .. 18;
+      Reserved_19_31 at 0 range 19 .. 31;
+   end record;
+
+   -------------------------------
+   -- SLICE cluster's Registers --
+   -------------------------------
+
+   --  Timer slice
+   type SLICE_Cluster is record
+      --  Counter register
+      CNT : aliased neorv32.UInt32;
+      --  Threshold register
+      THR : aliased neorv32.UInt32;
+   end record
+     with Size => 64;
+
+   for SLICE_Cluster use record
+      CNT at 16#0# range 0 .. 31;
+      THR at 16#4# range 0 .. 31;
+   end record;
+
+   --  Timer slice
+   type SLICE_Clusters is array (0 .. 15) of SLICE_Cluster;
 
    -----------------
    -- Peripherals --
@@ -49,19 +80,19 @@ package neorv32.GPTMR is
 
    --  General purpose timer
    type GPTMR_Peripheral is record
-      --  Control register
-      CTRL  : aliased CTRL_Register;
-      --  Threshold register
-      THRES : aliased neorv32.UInt32;
-      --  Counter register
-      COUNT : aliased neorv32.UInt32;
+      --  Control and status register 0
+      CSR0  : aliased CSR0_Register;
+      --  Control and status register 1
+      CSR1  : aliased CSR1_Register;
+      --  Timer slice
+      SLICE : aliased SLICE_Clusters;
    end record
      with Volatile;
 
    for GPTMR_Peripheral use record
-      CTRL  at 16#0# range 0 .. 31;
-      THRES at 16#4# range 0 .. 31;
-      COUNT at 16#8# range 0 .. 31;
+      CSR0  at 16#0# range 0 .. 31;
+      CSR1  at 16#4# range 0 .. 31;
+      SLICE at 16#80# range 0 .. 1023;
    end record;
 
    --  General purpose timer
