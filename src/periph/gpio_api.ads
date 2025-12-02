@@ -6,7 +6,6 @@ package GPIO_API is
 
    type GPIO_Pin_T is tagged private;
    type Mode_T is (Off, Input, Output, InOut);
-   Mode_Off_Error : exception;
 
    function Create_Pin
      (Pin_Index : Natural;
@@ -24,7 +23,5 @@ private
       Pin_Mode  : Mode_T  := Off;
       Enabled   : Boolean := False;
    end record;
-
-   procedure Update_GPIO (Pin : GPIO_Pin_T);
 
 end GPIO_API;

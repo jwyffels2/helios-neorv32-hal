@@ -1,5 +1,30 @@
 package body GPIO_API is
 
+   procedure Update_GPIO (Pin : GPIO_Pin_T) is
+      Mask : UInt32 := Shift_Left (1, Pin.Pin_Index);
+   begin
+      -- Clear the pin in both registers
+      GPIO_Periph.PORT_IN  := GPIO_Periph.PORT_IN  and not Mask;
+      GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT and not Mask;
+
+      if Pin.Enabled then
+         case Pin.Pin_Mode is
+            when Input =>
+               GPIO_Periph.PORT_IN := GPIO_Periph.PORT_IN or Mask;
+
+            when Output =>
+               GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT or Mask;
+
+            when InOut =>
+               GPIO_Periph.PORT_IN  := GPIO_Periph.PORT_IN  or Mask;
+               GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT or Mask;
+
+            when Off =>
+               null;
+         end case;
+      end if;
+   end Update_GPIO;
+
    function Create_Pin
      (Pin_Index : Natural;
       Mode      : Mode_T := Off;
@@ -40,30 +65,5 @@ package body GPIO_API is
       Pin.Enabled := False;
       Update_GPIO (Pin);
    end Disable;
-
-   procedure Update_GPIO (Pin : GPIO_Pin_T) is
-      Mask : UInt32 := Shift_Left (1, Pin.Pin_Index);
-   begin
-      -- Clear the pin in both registers
-      GPIO_Periph.PORT_IN  := GPIO_Periph.PORT_IN  and not Mask;
-      GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT and not Mask;
-
-      if Pin.Enabled then
-         case Pin.Pin_Mode is
-            when Input =>
-               GPIO_Periph.PORT_IN := GPIO_Periph.PORT_IN or Mask;
-
-            when Output =>
-               GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT or Mask;
-
-            when InOut =>
-               GPIO_Periph.PORT_IN  := GPIO_Periph.PORT_IN  or Mask;
-               GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT or Mask;
-
-            when Off =>
-               null;
-         end case;
-      end if;
-   end Update_GPIO;
 
 end GPIO_API;
