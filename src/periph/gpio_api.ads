@@ -1,20 +1,30 @@
+with Ada.Assertions;
 with neorv32; use neorv32;
 with neorv32.GPIO; use neorv32.GPIO;
 
 package GPIO_API is
 
-   subtype GPIO_Pin_T is Natural range 0 .. 31;
-   type GPIO_Pin_List_T is array (Positive range <>) of GPIO_Pin_T;
+   type GPIO_Pin_T is tagged private;
+   type Mode_T is (Off, Input, Output, InOut);
+   Mode_Off_Error : exception;
 
-   procedure Enable (Pin : GPIO_Pin_T);
-   procedure Enable (Pins : GPIO_Pin_List_T);
-   procedure Disable (Pin : GPIO_Pin_T);
-   procedure Disable (Pins : GPIO_Pin_List_T);
+   function Create_Pin
+     (Pin_Index : Natural;
+      Mode : Mode_T := Off;
+      Enabled : Boolean := False)
+      return GPIO_Pin_T;
+   procedure Set_Mode (Pin : in out GPIO_Pin_T; Mode : Mode_T);
+   procedure Enable (Pin : in out GPIO_Pin_T);
+   procedure Disable (Pin : in out GPIO_Pin_T);
 
 private
 
-   Port_State : UInt32 := 0;
+   type GPIO_Pin_T is tagged record
+      Pin_Index : Natural range 0 .. 31;
+      Pin_Mode  : Mode_T  := Off;
+      Enabled   : Boolean := False;
+   end record;
 
-   procedure Set_Port_Out;
+   procedure Update_GPIO (Pin : GPIO_Pin_T);
 
 end GPIO_API;
