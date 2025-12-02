@@ -7,8 +7,9 @@ package GPIO_API is
    type GPIO_Pin_List_T is array (Positive range <>) of GPIO_Pin_T;
 
    procedure Enable (Pin : GPIO_Pin_T);
+   procedure Enable (Pins : GPIO_Pin_List_T);
    procedure Disable (Pin : GPIO_Pin_T);
-   procedure Set (Pins : GPIO_Pin_List_T);
+   procedure Disable (Pins : GPIO_Pin_List_T);
 
 private
 
