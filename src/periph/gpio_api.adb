@@ -1,22 +1,27 @@
 package body GPIO_API is
 
-   procedure Enable_Pin (Pin : GPIO_Pin) is
+   procedure Enable (Pin : GPIO_Pin_T) is
    begin
       Port_State := Port_State or Shift_Left (1, Pin);
       Set_Port_Out;
-   end Enable_Pin;
+   end Enable;
 
-   procedure Disable_Pin (Pin : GPIO_Pin) is
+   procedure Disable (Pin : GPIO_Pin_T) is
    begin
       Port_State := Port_State and not Shift_Left (1, Pin);
       Set_Port_Out;
-   end Disable_Pin;
+   end Disable;
 
-   procedure Set_Pins (Mask : UInt32) is
+   procedure Set (Pins : GPIO_Pin_List_T) is
+      Mask : UInt32 := 0;
    begin
+      for Pin of Pins loop
+         Mask := Mask or Shift_Left (1, Pin);
+      end loop;
+
       Port_State := Mask;
       Set_Port_Out;
-   end Set_Pins;
+   end Set;
 
    procedure Set_Port_Out is
    begin

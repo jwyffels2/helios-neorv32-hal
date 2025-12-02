@@ -3,11 +3,12 @@ with neorv32.GPIO; use neorv32.GPIO;
 
 package GPIO_API is
 
-   subtype GPIO_Pin is Natural range 0 .. 31;
+   subtype GPIO_Pin_T is Natural range 0 .. 31;
+   type GPIO_Pin_List_T is array (Positive range <>) of GPIO_Pin_T;
 
-   procedure Enable_Pin (Pin : GPIO_Pin);
-   procedure Disable_Pin (Pin : GPIO_Pin);
-   procedure Set_Pins (Mask : UInt32);
+   procedure Enable (Pin : GPIO_Pin_T);
+   procedure Disable (Pin : GPIO_Pin_T);
+   procedure Set (Pins : GPIO_Pin_List_T);
 
 private
 
