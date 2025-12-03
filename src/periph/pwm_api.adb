@@ -66,7 +66,7 @@ package body PWM_API is
       PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.TOP := PWM.TOP;
       PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.CMP := PWM.CMP;
 
-      -- Normal polarity
+      -- Set polarity
       PWM_Periph.POLARITY := PWM_Periph.POLARITY and not Shift_Left(1, PWM.Channel);
 
       -- Enable channel
