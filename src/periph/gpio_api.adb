@@ -1,26 +1,32 @@
 package body GPIO_API is
 
-   procedure Enable_Pin (Pin : GPIO_Pin) is
+   function Create_Pin (Pin_Index : GPIO_Index) return GPIO_Pin_T is
    begin
-      Port_State := Port_State or Shift_Left (1, Pin);
-      Set_Port_Out;
-   end Enable_Pin;
+      return (Pin_Index => Pin_Index);
+   end Create_Pin;
 
-   procedure Disable_Pin (Pin : GPIO_Pin) is
+   function Read (Pin : in out GPIO_Pin_T) return Boolean is
+      Mask : constant UInt32 := Shift_Left (1, Pin.Pin_Index);
    begin
-      Port_State := Port_State and not Shift_Left (1, Pin);
-      Set_Port_Out;
-   end Disable_Pin;
+      return (GPIO_Periph.PORT_IN and Mask) /= 0;
+   end Read;
 
-   procedure Set_Pins (Mask : UInt32) is
+   procedure Set (Pin : in out GPIO_Pin_T) is
+      Mask : constant UInt32 := Shift_Left (1, Pin.Pin_Index);
    begin
-      Port_State := Mask;
-      Set_Port_Out;
-   end Set_Pins;
+      GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT or Mask;
+   end Set;
 
-   procedure Set_Port_Out is
+   procedure Clear (Pin : in out GPIO_Pin_T) is
+      Mask : constant UInt32 := Shift_Left (1, Pin.Pin_Index);
    begin
-      neorv32.GPIO.GPIO_Periph.PORT_OUT := Port_State;
-   end Set_Port_Out;
+      GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT and not Mask;
+   end Clear;
+
+   procedure Toggle (Pin : in out GPIO_Pin_T) is
+      Mask : constant UInt32 := Shift_Left (1, Pin.Pin_Index);
+   begin
+      GPIO_Periph.PORT_OUT := GPIO_Periph.PORT_OUT xor Mask;
+   end Toggle;
 
 end GPIO_API;
