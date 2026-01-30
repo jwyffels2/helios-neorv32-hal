@@ -1,55 +1,34 @@
+with Ada.Text_IO; use Ada.Text_IO;
+with neorv32; use neorv32;
+with neorv32.PWM; use neorv32.PWM;
+with neorv32.SYSINFO; use neorv32.SYSINFO;
+
 package body PWM_API is
 
-   -- PWM prescaler configuration record
-   type Prescaler_Entry is record
-      CLKPRSC : UInt32;
-      Clock_Prescaler : UInt32;
-   end record;
-
-   -- PWM prescalers array containing the clock prescaler value used by the PWM counter
-   Prescalers : constant array (Natural range <>) of Prescaler_Entry :=
-     [ (0,    2),
-       (1,    4),
-       (2,    8),
-       (3,   64),
-       (4,  128),
-       (5, 1024),
-       (6, 2048),
-       (7, 4096) ];
-
    ----------------------------------------------------------------------------
-   -- Compute_CLKPRSC_And_TOP
+   -- Helper function declarations
+   ----------------------------------------------------------------------------
+
+   -- Returns True if and only if the currently enabled PWM channels consist
+   -- solely of the channel represented by PWM.
+   function Only_This_Channel_Enabled (PWM : PWM_T) return Boolean;
+
+   -- Determines whether the PWM prescaler may be updated.
    --
-   -- Selects the prescaler and TOP value that produce a PWM frequency closest
-   -- to the requested Target_Hz.
+   -- The prescaler can be changed if:
+   --  * No PWM channels are currently enabled, or
+   --  * The only enabled channel is the one being configured, or
+   --  * The requested prescaler matches the currently active prescaler
+   function Can_Prescaler_Update (PWM : PWM_T; Requested : Natural) return Boolean;
+
+   -- Supported prescalers defined by the NEORV32 PWM documentation. The array
+   -- index corresponds to the value written into CLKPRSC.
+   Prescaler_Values : constant array (0 .. 7) of Natural :=
+     (2, 4, 8, 64, 128, 1024, 2048, 4096);
+
    ----------------------------------------------------------------------------
-   procedure Compute_CLKPRSC_And_TOP (Target_Hz : Hz_T; CLKPRSC : out UInt32; TOP : out UInt16) is
-      F_Main : constant Float := Float (SYSINFO_Periph.CLK);
-      Best_Error_Hz : Float := Float'Last; -- Track smallest frequenct error
-   begin
-      for P of Prescalers loop
-         declare
-            -- Get the ideal TOP and round it to minimize frequency error
-            Ideal_TOP : Float := (F_Main / (Float (P.Clock_Prescaler) * Target_Hz)) - 1.0;
-            Rounded_TOP : Integer := Integer (Ideal_TOP + 0.5);
-         begin
-            if Rounded_TOP >= 0 and Rounded_TOP <= Integer (UInt16'Last) then
-               declare
-                  -- Compute actual frequency with this prescaler and store error
-                  Actual_Frequency : Float := F_Main / (Float (P.Clock_Prescaler) * Float (Rounded_TOP + 1));
-                  Error : Float := abs (Actual_Frequency - Target_Hz);
-               begin
-                  -- Use the prescaler with the smallest error
-                  if Error < Best_Error_Hz then
-                     Best_Error_Hz := Error;
-                     CLKPRSC := P.CLKPRSC;
-                     TOP := UInt16 (Rounded_TOP);
-                  end if;
-               end;
-            end if;
-         end;
-      end loop;
-   end Compute_CLKPRSC_And_TOP;
+   -- Public API implementation
+   ----------------------------------------------------------------------------
 
    function Create (Channel : PWM_Channel_T) return PWM_T is
       PWM : PWM_T;
@@ -58,46 +37,73 @@ package body PWM_API is
       return PWM;
    end Create;
 
-   procedure Set_Frequency (PWM : in out PWM_T; Target_Hz : Hz_T) is
+   procedure Configure (PWM : PWM_T; Target_Hz : Hz_T; Duty : Duty_Cycle_T) is
+      F_Main : constant Float := Float (SYSINFO_Periph.CLK);
+      Ideal_TOP : Float;
+      TOP : UInt16;
+      CMP : UInt16;
    begin
-      PWM.Frequency := Target_Hz;
-      Compute_CLKPRSC_And_TOP (Target_Hz, PWM.CLKPRSC, PWM.TOP);
+      for I in Prescaler_Values'Range loop
+         Ideal_TOP := (F_Main / (Float (Prescaler_Values (I)) * Target_Hz)) - 1.0;
 
-      PWM.CMP := UInt16 (Integer (Float (PWM.TOP + 1) * PWM.Duty));
-   end Set_Frequency;
+         if Ideal_TOP >= 0.0 and Ideal_TOP <= Float (UInt16'Last) then
+            if Can_Prescaler_Update (PWM, I) then
+               PWM_Periph.CLKPRSC := UInt32 (I);
 
-   procedure Set_Duty_Cycle (PWM : in out PWM_T; Duty : Duty_Cycle_T) is
+               TOP := UInt16 (Ideal_TOP);
+               PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.TOP := TOP;
+
+               CMP := UInt16 (Float (TOP + 1) * Duty);
+               PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.CMP := CMP;
+            else
+               Put_Line ("CLKPRSC conflict: enabled channel requires a different prescaler");
+            end if;
+
+            return;
+         end if;
+      end loop;
+   end Configure;
+
+   procedure Set_Polarity (PWM : PWM_T; Inverted : Boolean) is
    begin
-      PWM.Duty := Duty;
-      PWM.CMP := UInt16 (Integer (Float (PWM.TOP + 1) * Duty));
-   end Set_Duty_Cycle;
+      if Inverted then
+         PWM_Periph.POLARITY := PWM_Periph.POLARITY or Shift_Left (1, PWM.Channel);
+      else
+         PWM_Periph.POLARITY := PWM_Periph.POLARITY and not Shift_Left (1, PWM.Channel);
+      end if;
+   end Set_Polarity;
 
-   procedure Enable (PWM : in out PWM_T) is
+   procedure Enable (PWM : PWM_T) is
    begin
-      -- Disable channel before reconfiguration
-      PWM_Periph.ENABLE := PWM_Periph.ENABLE and not Shift_Left (1, PWM.Channel);
-
-      -- Configure global prescaler
-      PWM_Periph.CLKPRSC := PWM.CLKPRSC;
-
-      -- Program TOP and CMP
-      PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.TOP := PWM.TOP;
-      PWM_Periph.CHANNEL (PWM.Channel).TOPCMP.CMP := PWM.CMP;
-
-      -- Normal polarity
-      PWM_Periph.POLARITY := PWM_Periph.POLARITY and not Shift_Left (1, PWM.Channel);
-
-      -- Enable channel
-      PWM_Periph.ENABLE := PWM_Periph.ENABLE or Shift_Left (1, PWM.Channel);
-
-      PWM.Enabled := True;
+      if (PWM_Periph.ENABLE and Shift_Left (1, PWM.Channel)) = 0 then
+         PWM_Periph.ENABLE := PWM_Periph.ENABLE or Shift_Left (1, PWM.Channel);
+      end if;
    end Enable;
 
-   procedure Disable (PWM : in out PWM_T) is
+   procedure Disable (PWM : PWM_T) is
    begin
-      PWM_Periph.ENABLE := PWM_Periph.ENABLE and not Shift_Left (1, PWM.Channel);
-
-      PWM.Enabled := False;
+      if (PWM_Periph.ENABLE and Shift_Left (1, PWM.Channel)) /= 0 then
+         PWM_Periph.ENABLE := PWM_Periph.ENABLE and not Shift_Left (1, PWM.Channel);
+      end if;
    end Disable;
+
+   ----------------------------------------------------------------------------
+   -- Helper function implementations
+   ----------------------------------------------------------------------------
+
+   function Only_This_Channel_Enabled (PWM : PWM_T) return Boolean is
+      This_Channel : constant UInt32 := Shift_Left (1, PWM.Channel);
+   begin
+      return PWM_Periph.ENABLE = This_Channel;
+   end Only_This_Channel_Enabled;
+
+   function Can_Prescaler_Update (PWM : PWM_T; Requested : Natural) return Boolean is
+   begin
+      if PWM_Periph.ENABLE = 0 or else Only_This_Channel_Enabled (PWM) then
+         return true;
+      end if;
+
+      return Requested = Natural (PWM_Periph.CLKPRSC);
+   end Can_Prescaler_Update;
 
 end PWM_API;

@@ -1,7 +1,3 @@
-with neorv32; use neorv32;
-with neorv32.PWM; use neorv32.PWM;
-with neorv32.SYSINFO; use neorv32.SYSINFO;
-
 package PWM_API is
 
    type PWM_T is tagged private;
@@ -16,56 +12,39 @@ package PWM_API is
    -- (0.0 = 0%, 1.0 = 100%)
    subtype Duty_Cycle_T is Float range 0.0 .. 1.0;
 
-   ----------------------------------------------------------------------------
-   -- Create
-   --
-   -- Constructs a PWM object bound to a specific PWM channel index.
-   ----------------------------------------------------------------------------
+   -- Creates a PWM handle bound to a specific hardware channel. This does not
+   -- touch hardware; it only associates a channel with this API.
    function Create (Channel : PWM_Channel_T) return PWM_T;
 
-   ----------------------------------------------------------------------------
-   -- Set_Frequency
+   -- Configures the PWM channel to generate a waveform with the requested
+   -- frequency and duty cycle.
    --
-   -- Computes and stores the prescaler and TOP values required to achieve the
-   -- requested PWM frequency. CMP is also recomputed to preserve the current
-   -- duty cycle.
-   ----------------------------------------------------------------------------
-   procedure Set_Frequency (PWM : in out PWM_T; Target_Hz : Hz_T);
+   -- This procedure programs hardware registers (CLKPRSC, TOP, CMP) and may
+   -- fail to update the CLKPRSC prescaler if:
+   --  * Other channels are active, or
+   --  * The calculated prescaler does not match the existing prescaler
+   -- This is to prevent improperly overwriting the prescaler which can break
+   -- active PWM channels.
+   --
+   -- Note: This does not automatically enable the channel.
+   procedure Configure (PWM : PWM_T; Target_Hz : Hz_T; Duty : Duty_Cycle_T);
 
-   ----------------------------------------------------------------------------
-   -- Set_Duty_Cycle
-   --
-   -- Updates the stored duty cycle and recomputes CMP accordingly.
-   ----------------------------------------------------------------------------
-   procedure Set_Duty_Cycle (PWM : in out PWM_T; Duty : Duty_Cycle_T);
+   -- Sets output polarity for this channel. When Inverted = True, the PWM
+   -- output is active-low.
+   procedure Set_Polarity (PWM : PWM_T; Inverted : Boolean);
 
-   ----------------------------------------------------------------------------
-   -- Enable
-   --
-   -- Programs the PWM hardware registers for this channel and enables it.
-   ----------------------------------------------------------------------------
-   procedure Enable  (PWM : in out PWM_T);
+   -- Enables PWM output for this channel. If already enabled, this is a
+   -- no-op.
+   procedure Enable (PWM : PWM_T);
 
-   ----------------------------------------------------------------------------
-   -- Disable
-   --
-   -- Disables the PWM channel.
-   ----------------------------------------------------------------------------
-   procedure Disable (PWM : in out PWM_T);
+   -- Disables PWM output for this channel. If already disabled, this is a
+   -- no-op.
+   procedure Disable (PWM : PWM_T);
 
 private
 
-   -- Internal representation of a PWM channel configuration.
-   -- All fields correspond to hardware-visible parameters or
-   -- derived values required to program the PWM peripheral.
    type PWM_T is tagged record
-      Channel   : PWM_Channel_T := 0;
-      TOP       : UInt16        := 0;
-      CMP       : UInt16        := 0;
-      CLKPRSC   : UInt32        := 0;
-      Duty      : Duty_Cycle_T  := 0.5;
-      Frequency : Float         := 5.0;
-      Enabled   : Boolean       := False;
+      Channel : PWM_Channel_T;
    end record;
 
 end PWM_API;
