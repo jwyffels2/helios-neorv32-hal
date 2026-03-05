@@ -2,7 +2,7 @@ with "config/neorv32_hal_config.gpr";
 with "bare_runtime.gpr";
 project Neorv32_Hal is
 
-   for Languages use ("Ada", "ASM_CPP");
+   for Languages use ("Ada", "ASM_CPP", "C");
 
    for Target use "riscv64-elf";
    for Runtime ("Ada") use Bare_Runtime'Runtime ("Ada");
@@ -23,6 +23,7 @@ project Neorv32_Hal is
 
    package Compiler is
       for Default_Switches ("Ada") use Neorv32_Hal_Config.Ada_Compiler_Switches & ("-gnat2022");
+      for Default_Switches ("C") use ("-std=c99");
    end Compiler;
 
    package Binder is
