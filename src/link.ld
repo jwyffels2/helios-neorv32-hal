@@ -35,7 +35,7 @@ MEMORY
 
   /* As a bootloader app: */
   /*rom (rx) : ORIGIN = 0xFFE00000, LENGTH = 0x10000 */
-  ram (rwx) : ORIGIN = 0x80000000, LENGTH = 0x4000
+  ram (rwx) : ORIGIN = 0x80000000, LENGTH = 0x20000
 }
 
 SECTIONS

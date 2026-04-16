@@ -1,6 +1,8 @@
 -- This is the uart1 "implementation file" and implements procedures/functions defined in uart1.ads
 with Ada.Text_IO; use Ada.Text_IO;
 
+with Interfaces; use Interfaces;
+
 with neorv32; use neorv32;
 with neorv32.UART1; use neorv32.UART1;
 
@@ -108,5 +110,27 @@ package body Uart1 is
         return UART1_Periph.CTRL.UART_CTRL_RX_NEMPTY = 1;
     end RX_Ready;
     pragma Inline (RX_Ready);
+
+    procedure Flush_RX is
+        Dummy : Character;
+    begin
+        while RX_Ready loop
+            Dummy := Read_RX;
+        end loop;
+    end Flush_RX;
+
+    function Read_RX_Byte return Byte is
+        UART_RX : Byte with Volatile, Address => UART1_Periph.DATA'Address;
+    begin
+        return UART_RX;
+    end Read_RX_Byte;
+    pragma Inline (Read_RX_Byte);
+
+    procedure Write_TX_Byte (Value : Byte) is
+        UART_TX : Byte with Volatile, Address => UART1_Periph.DATA'Address;
+    begin
+        UART_TX := Value;
+    end Write_TX_Byte;
+    pragma Inline (Write_TX_Byte);
 
 end Uart1;
