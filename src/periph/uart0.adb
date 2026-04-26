@@ -1,5 +1,6 @@
 -- This is the uart0 "implementation file" and implements procedures/functions defined in uart0.ads
 with Interfaces.C; use Interfaces.C;
+with Interfaces; use Interfaces;
 with Ada.Text_IO; use Ada.Text_IO;
 
 with neorv32; use neorv32;
@@ -68,9 +69,6 @@ package body Uart0 is
     pragma Inline (Write_TX);
 
     -- Wait until hardware is ready before writing the byte using write_tx
-    procedure Put_Char (C : Interfaces.C.char) with
-        -- Make put_char available to C as putchar
-        Export, Convention => C, External_Name => "putchar";
     procedure Put_Char (C : Interfaces.C.char) is
     begin
         -- Wait while TX FIFO is full: this is when TX_NFULL = 0
@@ -111,4 +109,26 @@ package body Uart0 is
             Write_TX (C);
         end loop;
     end Put;
+
+    function RX_Ready return Boolean is
+    begin
+        return UART0_Periph.CTRL.UART_CTRL_RX_NEMPTY = 1;
+    end RX_Ready;
+    pragma Inline (RX_Ready);
+
+    procedure Flush_RX is
+        Dummy : Character;
+    begin
+        while RX_Ready loop
+            Dummy := Read_RX;
+        end loop;
+    end Flush_RX;
+
+    function Read_RX_Byte return Byte is
+        UART_RX : Byte with Volatile, Address => UART0_Periph.DATA'Address;
+    begin
+        return UART_RX;
+    end Read_RX_Byte;
+    pragma Inline (Read_RX_Byte);
+
 end Uart0;
