@@ -79,23 +79,6 @@ package body Uart0 is
         Write_TX (Interfaces.C.To_Ada (C));
     end Put_Char;
 
-    -- Polls status bit until something arrives. When it does, print it.
-    procedure Echo_Uart_RX is
-        -- Declare C to hold a char
-        C : Character;
-    begin
-        loop
-            -- Check the uart status bit. 1 means not empty
-            if UART0_Periph.CTRL.UART_CTRL_RX_NEMPTY = 1 then
-                -- Read byte from the data reg into C
-                C := Read_RX;
-                -- Print the string representation of C
-                Put_Line (C'Image);
-                exit;
-            end if;
-        end loop;
-    end Echo_Uart_RX;
-
     -- Similar to put_char but puts an entire string and not available to C
     procedure Put (S : String) is
     begin
@@ -109,26 +92,5 @@ package body Uart0 is
             Write_TX (C);
         end loop;
     end Put;
-
-    function RX_Ready return Boolean is
-    begin
-        return UART0_Periph.CTRL.UART_CTRL_RX_NEMPTY = 1;
-    end RX_Ready;
-    pragma Inline (RX_Ready);
-
-    procedure Flush_RX is
-        Dummy : Character;
-    begin
-        while RX_Ready loop
-            Dummy := Read_RX;
-        end loop;
-    end Flush_RX;
-
-    function Read_RX_Byte return Byte is
-        UART_RX : Byte with Volatile, Address => UART0_Periph.DATA'Address;
-    begin
-        return UART_RX;
-    end Read_RX_Byte;
-    pragma Inline (Read_RX_Byte);
 
 end Uart0;
