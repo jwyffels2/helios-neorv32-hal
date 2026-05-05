@@ -2,6 +2,10 @@
 with Interfaces; use Interfaces;
 with Interfaces.C; use Interfaces.C;
 
+
+with Interfaces; use Interfaces;
+with Interfaces.C; use Interfaces.C;
+
 -- This is the uart0 "spec file" and defines what procedures/functions are available to use in helios.adb
 package Uart0 is
 
@@ -9,6 +13,7 @@ package Uart0 is
 
     -- Startup uart0, settings
     procedure Init (Baud_Rate : Natural);
+
 
     -- Read a char from the data reg
     function Read_RX return Character;
